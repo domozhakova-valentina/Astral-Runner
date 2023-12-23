@@ -47,7 +47,7 @@ class Level:
                     all_group.add(sprite)
         return all_group
 
-    def run(self):
+    def run(self, screen, event):
         '''Запуск уровня!'''
         # местность
         self.terrain_sprites.update(self.world_shift)
@@ -62,3 +62,6 @@ class Level:
         # рисование возрождения и цели - конца
         self.designations_players.update(self.world_shift)
         self.designations_players.draw(self.display)
+
+    def update(self, event):
+        pass
