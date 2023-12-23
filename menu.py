@@ -1,0 +1,34 @@
+from buttons_functions import *
+from settings import *
+
+# создаем список пунктов меню
+items = [
+    Button("Начать игру", action=new_game_action, width=menu_item_width, height=menu_item_height, color=(0, 150, 0),
+           font=font, font_size=font_size, x=450, y=300),
+    Button("Правила", action=rules_action, width=menu_item_width, height=menu_item_height, color=(0, 150, 0),
+           font=font, font_size=font_size, x=450, y=400),
+    Button("Настройки", action=options_action, width=menu_item_width, height=menu_item_height, color=(0, 150, 0),
+           font=font, font_size=font_size, x=450, y=500)
+]
+
+
+class Menu:
+    def __init__(self, items):
+        self.items = items
+        self.fon = pygame.image.load('menu/fon.jpg')
+        self.index = 0
+
+    def run(self, event, screen):
+        # код для рисования меню на экране
+        screen.blit(self.fon, (0, 0))
+        for item in self.items:
+            item.draw(screen)
+
+    def update(self, event):
+        # проверка на клик по кнопке. Возвращает либо функцию, соответсвующую кнопке, либо None
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for item in self.items:
+                action = item.update(event.pos)
+                if action is not None:
+                    return action
+        return None
