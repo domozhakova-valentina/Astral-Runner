@@ -18,7 +18,6 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 0.6
         self.jump_coef = -16
         self.rect = self.image.get_rect(topleft=position)  # установка на позицию
-        self.mask = pygame.mask.from_surface(self.image)
         self.face_right = True
         self.ground = False  # стоит на земле
         self.ceiling = False  # касается потолка
@@ -37,8 +36,8 @@ class Player(pygame.sprite.Sprite):
             self.index_cadre = 0
         cadre = cadres[int(self.index_cadre)]
         self.image = cadre if self.face_right else pygame.transform.flip(cadre, True, False)
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(topleft=self.rect.topleft)
+        if self.action == 'idle' and int(self.index_cadre) == 1:  # для удержания игрока стоящим при приседании
+            self.rect = self.rect.move(0, 3)
         if self.ground and self.right:
             self.rect = self.image.get_rect(bottomright=self.rect.bottomright)
         elif self.ground and self.left:

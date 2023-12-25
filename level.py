@@ -43,7 +43,7 @@ class Level:
                         surfaces = import_folder_images('graphics/tirrein')
                         image = surfaces[int(col)]  # берём по индификатуру из списка изображение
                         if type == 'decorations':
-                            sprite = StaticTile(tile_size, x, y, image, croped=(0, 50))
+                            sprite = StaticTile(tile_size, x, y, image, croped=(10, 50))
                         else:
                             sprite = StaticTile(tile_size, x, y, image)
                     elif type == 'coins':
@@ -75,7 +75,7 @@ class Level:
         group_sprites = self.terrain_sprites.sprites() + self.fg_decorations.sprites()
         sprite.rect.x += sprite.direction.x * sprite.speed
         for gs in group_sprites:
-            if pygame.sprite.collide_mask(sprite, gs):
+            if gs.rect.colliderect(sprite.rect):
                 if sprite.direction.x < 0:
                     sprite.rect.left = gs.rect.right
                     sprite.left = True
@@ -97,10 +97,10 @@ class Level:
         for gs in group_sprites:
             if gs.rect.colliderect(sprite.rect):
                 if sprite.direction.y < 0:
-                    sprite.rect.top = gs.rect.bottom
+                    sprite.rect.top = gs.rect.bottom + 8  # +8 убирает баг с перекрытием из-за анимации
                     sprite.direction.y = 0
                     sprite.ceiling = True
-                elif sprite.direction.y > 0:
+                if sprite.direction.y > 0:
                     sprite.rect.bottom = gs.rect.top
                     sprite.direction.y = 0
                     sprite.ground = True
