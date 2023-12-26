@@ -42,3 +42,18 @@ def rules_action():
 
 def options_action():
     return 'running_options'
+
+
+def menu_action():
+    return 'running_menu'
+
+
+def active_sound():
+    pass
+
+
+def active_music():
+    pass
+
+def change_music_loud():
+    pass
