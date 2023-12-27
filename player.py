@@ -3,14 +3,18 @@ from load import import_folder_images
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, screen, character_path, speed=5):
+    PATH_RUN_DUST = 'graphics/character_animate/particles_character/run/'
+
+    def __init__(self, position, screen, character_path, dust_jump, speed=5):
         super().__init__()
         self.import_character_animations(character_path)
+
         # про анимацию
         self.index_cadre = 0
         self.an_speed = 0.1  # коэффициент перемотки кадров
         self.image = self.animations['idle'][self.index_cadre]
         self.action = 'idle'
+
         # физические величины
         self.direction = pygame.math.Vector2(0, 0)
         self.CONST_SPEED = speed
@@ -22,6 +26,30 @@ class Player(pygame.sprite.Sprite):
         self.ground = False  # стоит на земле
         self.ceiling = False  # касается потолка
         self.left, self.right = False, False  # касается чего-то справа или слева соответственно
+
+        # про пыль
+        self.import_particles_run()
+        self.dust_index_cadre = 0
+        self.dust_an_speed = 0.15
+        self.surface = screen
+        self.dust_jump = dust_jump
+
+    def import_particles_run(self):
+        self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
+
+    def animate_run_dust(self):
+        '''Анимация частиц пыли из-под ног при беги.'''
+        if self.action == 'run' and self.ground:
+            self.dust_index_cadre += self.dust_an_speed
+            if self.dust_index_cadre > len(self.dustes_run):
+                self.dust_index_cadre = 0
+            cadre = self.dustes_run[int(self.dust_index_cadre)]
+            if self.face_right:
+                position = self.rect.bottomleft - pygame.math.Vector2(4, 10)  # смещения пыли прям под ноги
+            else:
+                position = self.rect.bottomright + pygame.math.Vector2(4, -10)
+                cadre = pygame.transform.flip(cadre, True, False)
+            self.surface.blit(cadre, position)
 
     def import_character_animations(self, path):
         self.animations = {'run': None, 'jump': None, 'idle': None}  # словарь с изображениями каждого вида анимации
@@ -72,6 +100,7 @@ class Player(pygame.sprite.Sprite):
             self.direction.x = 0
         if input_keys[pygame.K_SPACE] and self.ground:
             self.direction.y = self.jump_coef
+            self.dust_jump(self.rect.midbottom)
 
     def gravitation(self):
         '''Изменение положения игрока под действием силы тяжести'''
@@ -82,3 +111,4 @@ class Player(pygame.sprite.Sprite):
         self.user_input()
         self.animation()
         self.tracking_action()
+        self.animate_run_dust()

@@ -3,6 +3,7 @@ from settings import tile_size, screen_width, screen_height
 from load import import_csv_map, import_folder_images
 from maps_odject import StaticTile, AnimatedDecor, Coin
 from player import Player
+from dust_particle import Particle
 
 
 class Level:
@@ -30,6 +31,9 @@ class Level:
         # монеты
         coins_map = import_csv_map(data_level['coins'])
         self.coins = self.create_tiles_group(coins_map, 'coins')
+
+        # пыль от ног игрока
+        self.particles_dust_sprite = pygame.sprite.GroupSingle()
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
@@ -59,7 +63,7 @@ class Level:
                     x = col_ind * tile_size
                     y = row_ind * tile_size
                     if col == '0':
-                        sprite = Player((x, y), self.display, 'graphics/character_animate/', speed=7)
+                        sprite = Player((x, y), self.display, 'graphics/character_animate/', self.jump_dust, speed=7)
                         self.player.add(sprite)
                         image = pygame.image.load('graphics/character/start.png').convert_alpha()
                         sprite = StaticTile(tile_size, x, y, image)
@@ -68,6 +72,25 @@ class Level:
                         image = pygame.image.load('graphics/character/end.png').convert_alpha()
                         sprite = StaticTile(tile_size, x, y, image)
                         self.purpose.add(sprite)
+
+    def jump_dust(self, x_y):
+        '''Записывает частицы прыжка в текущие частицы вертикального движения.'''
+        if self.player.sprite.face_right:
+            x_y += pygame.math.Vector2(7, -10)
+        else:
+            x_y += pygame.math.Vector2(-7, -10)
+        dust_sprite = Particle(x_y, 'jump')
+        self.particles_dust_sprite.add(dust_sprite)
+
+    def before_player_on_ground(self):
+        '''Нужен для распознания был ли игрок на земле до применения вертикальной коллизии.'''
+        self.flag_ground = True if self.player.sprite.ground else False
+
+    def land_dust(self):
+        '''Эффект частиц пыли при падение игрока на поверхность.'''
+        if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
+            dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
+            self.particles_dust_sprite.add(dust_sprite)
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -147,7 +170,9 @@ class Level:
 
         # рисование игрока
         self.player.update()
+        self.before_player_on_ground()
         self.vertical_collisions()
+        self.land_dust()
         self.horizontal_collisions()
         self.moving_map()
         self.player.draw(self.display)
@@ -158,6 +183,10 @@ class Level:
 
         self.purpose.update(self.world_shift)
         self.purpose.draw(self.display)
+
+        # отображение пыли
+        self.particles_dust_sprite.update(self.world_shift)
+        self.particles_dust_sprite.draw(self.display)
 
     def update(self, event):
         pass
