@@ -9,3 +9,6 @@ font_size = 50  # размер шрифта кнопки меню
 menu_item_width = 300  # Ширина кнопки меню
 menu_item_height = 50  # Высота кнопки меню
 FPS = 60  # частота кадров
+
+game_over_width = 500
+game_over_height = 100
