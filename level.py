@@ -1,7 +1,7 @@
 import pygame
 from settings import tile_size, screen_width, screen_height
 from load import import_csv_map, import_folder_images
-from maps_odject import StaticTile, AnimatedDecor, Coin
+from maps_odject import StaticTile, CuttingObject, Coin
 from player import Player
 from dust_particle import Particle
 
@@ -32,6 +32,10 @@ class Level:
         coins_map = import_csv_map(data_level['coins'])
         self.coins = self.create_tiles_group(coins_map, 'coins')
 
+        # режущие препятствия
+        cutting_object_map = import_csv_map(data_level['obstacles'])
+        self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles')
+
         # пыль от ног игрока
         self.particles_dust_sprite = pygame.sprite.GroupSingle()
 
@@ -52,6 +56,8 @@ class Level:
                             sprite = StaticTile(tile_size, x, y, image)
                     elif type == 'coins':
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
+                    elif type == 'obstacles':
+                        sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc')
                     all_group.add(sprite)
         return all_group
 
@@ -187,6 +193,10 @@ class Level:
         # отображение пыли
         self.particles_dust_sprite.update(self.world_shift)
         self.particles_dust_sprite.draw(self.display)
+
+        # рисование режущих препятствий
+        self.obstacles.update(self.world_shift)
+        self.obstacles.draw(self.display)
 
     def update(self, event):
         pass

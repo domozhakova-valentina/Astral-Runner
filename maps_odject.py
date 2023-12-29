@@ -42,8 +42,17 @@ class AnimatedDecor(MainTile):
         super().update(x_shift)
 
 
+class CuttingObject(AnimatedDecor):
+    def __init__(self, size, x, y, path):
+        super().__init__(size, x, y, path)
+        x, y = x + size // 2, y + size  # переопределение координат установки изображения
+        self.rect = self.image.get_rect(midbottom=(x, y))
+        # Создание маски для изображения
+        self.mask = pygame.mask.from_surface(self.image)
+
+
 class Coin(AnimatedDecor):
     def __init__(self, size, x, y, path):
         super().__init__(size, x, y, path)
-        x, y = x + size // 2, y + size // 2
+        x, y = x + size // 2, y + size // 2  # переопределение координат установки изображения
         self.rect = self.image.get_rect(center=(x, y))
