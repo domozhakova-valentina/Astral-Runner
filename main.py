@@ -3,6 +3,7 @@ from settings import *
 from data_level import level_0
 from level import Level
 from menu import Menu, items
+from game_over import Game_over, buttons
 from options import Options, options_items
 
 pygame.init()
@@ -10,10 +11,10 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
 scene = menu = Menu(items)
+game_over = Game_over(buttons)
 options = Options(options_items)
 level = Level(level_0, screen)  # создание уровня
 clock = pygame.time.Clock()
-
 while True:
     screen.fill('grey')
     for event in pygame.event.get():
@@ -31,6 +32,8 @@ while True:
         scene = options
     if game_state == 'running_rules':
         pass
+    if game_state == 'game_over':
+        scene = game_over
     scene.run(event, screen)
     pygame.display.flip()
     pygame.display.update()
