@@ -1,9 +1,10 @@
 import pygame
 from settings import tile_size, screen_width, screen_height
-from load import import_csv_map, import_folder_images
-from maps_odject import StaticTile, CuttingObject, Coin
+from load import import_csv_map, import_folder_images, import_folder_folder
+from maps_odject import StaticTile, CuttingObject, Coin, MainTile
 from player import Player
 from dust_particle import Particle
+from enemies import MainEnemy
 
 
 class Level:
@@ -39,6 +40,14 @@ class Level:
         # пыль от ног игрока
         self.particles_dust_sprite = pygame.sprite.GroupSingle()
 
+        # невидимые ограничения для врагов
+        limitations_enemy_map = import_csv_map(data_level['limitations_enemy'])
+        self.limitations_enemy = self.create_tiles_group(limitations_enemy_map, 'limitations enemy')
+
+        # враги
+        enemies_map = import_csv_map(data_level['enemies'])
+        self.enemies = self.create_tiles_group(enemies_map, 'enemy')
+
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
@@ -58,6 +67,12 @@ class Level:
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
                         sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc')
+                    elif type == 'limitations enemy':
+                        sprite = MainTile(tile_size, x, y)
+                    elif type == 'enemy':
+                        folder = import_folder_folder('graphics/enemies')
+                        path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
+                        sprite = MainEnemy(tile_size, x, y, path)
                     all_group.add(sprite)
         return all_group
 
@@ -162,20 +177,38 @@ class Level:
         else:
             self.world_shift.y = -6
 
+    def enemy_reverse(self):
+        '''Определяет столкновение с ограничениями и разворачивает врага.'''
+        for enemy in self.enemies.sprites():
+            if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
+                enemy.turn()
+
     def run(self, screen, event):
         '''Запуск уровня!'''
-        # местность
+        # обновление всего
         self.terrain_sprites.update(self.world_shift)
-        self.terrain_sprites.draw(self.display)
         self.fg_decorations.update(self.world_shift)
+        self.limitations_enemy.update(self.world_shift)
+        self.enemy_reverse()
+        self.enemies.update(self.world_shift)
+        self.coins.update(self.world_shift)
+        self.start.update(self.world_shift)
+        self.purpose.update(self.world_shift)
+        self.particles_dust_sprite.update(self.world_shift)
+        self.obstacles.update(self.world_shift)
+        self.player.update()
+
+        # местность
+        self.terrain_sprites.draw(self.display)
         self.fg_decorations.draw(self.display)
 
+        # про врагов
+        self.enemies.draw(self.display)
+
         # отображение монет
-        self.coins.update(self.world_shift)
         self.coins.draw(self.display)
 
         # рисование игрока
-        self.player.update()
         self.before_player_on_ground()
         self.vertical_collisions()
         self.land_dust()
@@ -184,18 +217,13 @@ class Level:
         self.player.draw(self.display)
 
         # рисование возрождения и цели - конца
-        self.start.update(self.world_shift)
         self.start.draw(self.display)
-
-        self.purpose.update(self.world_shift)
         self.purpose.draw(self.display)
 
         # отображение пыли
-        self.particles_dust_sprite.update(self.world_shift)
         self.particles_dust_sprite.draw(self.display)
 
         # рисование режущих препятствий
-        self.obstacles.update(self.world_shift)
         self.obstacles.draw(self.display)
 
     def update(self, event):

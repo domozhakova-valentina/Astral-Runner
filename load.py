@@ -1,6 +1,6 @@
 from csv import reader
 import pygame
-from os import walk
+import os
 
 
 def import_csv_map(path):
@@ -16,9 +16,15 @@ def import_csv_map(path):
 def import_folder_images(path):
     '''Из папки достаёт изображения и возвращает список их.'''
     surface_list = []
-    for _, _, image_files in walk(path):
+    for _, _, image_files in os.walk(path):
         for name_image in image_files:
             full_path = path + '/' + name_image
             image = pygame.image.load(full_path).convert_alpha()
             surface_list.append(image)
     return surface_list
+
+
+def import_folder_folder(path):
+    '''Из папки достаёт изображения и возвращает список их.'''
+    folders = [path + '/' + f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+    return folders

@@ -34,9 +34,6 @@ class Player(pygame.sprite.Sprite):
         self.surface = screen
         self.dust_jump = dust_jump
 
-        # маска игрока
-        self.mask = pygame.mask.from_surface(self.image)
-
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
 
