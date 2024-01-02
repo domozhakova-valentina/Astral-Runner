@@ -25,6 +25,6 @@ def import_folder_images(path):
 
 
 def import_folder_folder(path):
-    '''Из папки достаёт изображения и возвращает список их.'''
+    '''Из папки достаёт папку и возвращает список их.'''
     folders = [path + '/' + f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
     return folders

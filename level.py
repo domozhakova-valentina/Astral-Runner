@@ -5,13 +5,22 @@ from maps_odject import StaticTile, CuttingObject, Coin, MainTile
 from player import Player
 from dust_particle import Particle
 from enemies import MainEnemy
+from scales import RechargeScale
+from explosions import Explosion
 
 
 class Level:
+    PATH_EXP = 'graphics/explosions/1'
+
     def __init__(self, data_level, screen):
         # общая настройка
         self.display = screen
         self.world_shift = pygame.math.Vector2(0, 0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
+        self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы
+        self.background_image = pygame.image.load(data_level['background'])
+
+        # спрайты взрывов
+        self.explosions = pygame.sprite.Group()
 
         # игрока
         player_map = import_csv_map(data_level['player'])
@@ -66,7 +75,7 @@ class Level:
                     elif type == 'coins':
                         sprite = Coin(tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
-                        sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc')
+                        sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc', 0.3)
                     elif type == 'limitations enemy':
                         sprite = MainTile(tile_size, x, y)
                     elif type == 'enemy':
@@ -84,7 +93,8 @@ class Level:
                     x = col_ind * tile_size
                     y = row_ind * tile_size
                     if col == '0':
-                        sprite = Player((x, y), self.display, 'graphics/character_animate/', self.jump_dust, speed=7)
+                        sprite = Player((x, y), self.display, 'graphics/character_animate/', self.jump_dust,
+                                        permission_shoot=self.missile_scale.permission_shoot, speed=7)
                         self.player.add(sprite)
                         image = pygame.image.load('graphics/character/start.png').convert_alpha()
                         sprite = StaticTile(tile_size, x, y, image)
@@ -93,6 +103,9 @@ class Level:
                         image = pygame.image.load('graphics/character/end.png').convert_alpha()
                         sprite = StaticTile(tile_size, x, y, image)
                         self.purpose.add(sprite)
+
+    def load_scales(self, color_text):
+        self.missile_scale = RechargeScale((10, 10), color_text)
 
     def jump_dust(self, x_y):
         '''Записывает частицы прыжка в текущие частицы вертикального движения.'''
@@ -183,8 +196,40 @@ class Level:
             if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
                 enemy.turn()
 
+    def collision_missile_player(self):
+        '''Столкновения снаряда с монстрами и препятствиями.'''
+        enemy = self.enemies.sprites()
+        limitations = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        missiles = self.player.sprite.missiles
+
+        for sprite in limitations:  # переборка объектов карты
+            for missile in missiles:
+                if pygame.sprite.collide_mask(missile, sprite):
+                    self.generate_explosion(missile)
+                    missile.kill()
+        for sprite in enemy:  # переборка врагов
+            for missile in missiles:
+                if pygame.sprite.collide_mask(missile, sprite):
+                    self.generate_explosion(missile)
+                    sprite.kill()
+                    missile.kill()
+
+    def generate_explosion(self, missile):
+        if missile.speed < 0:
+            x, y = missile.rect.topleft - pygame.math.Vector2(22, 0)  # координаты левого верхнего угла снаряда + сдвиг
+        else:
+            x, y = missile.rect.topright - pygame.math.Vector2(22, 0) # координаты правого верхнего угла снаряда + сдвиг
+        self.explosion_sprite = Explosion(64, x, y, Level.PATH_EXP, k_animate=0.3)
+        self.explosions.add(self.explosion_sprite)
+
     def run(self, screen, event):
         '''Запуск уровня!'''
+        # рисование фона
+        self.display.blit(self.background_image, (0, 0))
+
+        # обработка столкновения снаряда player's
+        self.collision_missile_player()
+
         # обновление всего
         self.terrain_sprites.update(self.world_shift)
         self.fg_decorations.update(self.world_shift)
@@ -197,6 +242,15 @@ class Level:
         self.particles_dust_sprite.update(self.world_shift)
         self.obstacles.update(self.world_shift)
         self.player.update()
+        self.explosions.update(self.world_shift)
+        self.player.sprite.missiles.update(self.world_shift)
+        self.missile_scale.update()
+
+        # рисование пуль
+        self.player.sprite.missiles.draw(self.display)
+
+        # рисование шкалы перезарядки и относящейся к нему текст
+        self.missile_scale.draw(self.display)
 
         # местность
         self.terrain_sprites.draw(self.display)
@@ -225,6 +279,9 @@ class Level:
 
         # рисование режущих препятствий
         self.obstacles.draw(self.display)
+
+        # рисование взрыва
+        self.explosions.draw(self.display)
 
     def update(self, event):
         pass

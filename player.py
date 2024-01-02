@@ -1,11 +1,14 @@
 import pygame
 from load import import_folder_images
+from shot import Missile
+from settings import FPS
 
 
 class Player(pygame.sprite.Sprite):
     PATH_RUN_DUST = 'graphics/character_animate/particles_character/run/'
+    PATH_FOLDER_MISSILES = 'graphics/character/shot'
 
-    def __init__(self, position, screen, character_path, dust_jump, speed=5):
+    def __init__(self, position, screen, character_path, dust_jump, permission_shoot, speed=5):
         super().__init__()
         self.import_character_animations(character_path)
 
@@ -33,6 +36,11 @@ class Player(pygame.sprite.Sprite):
         self.dust_an_speed = 0.15
         self.surface = screen
         self.dust_jump = dust_jump
+
+        # стрельба игрока
+        self.koef_distance = FPS * 1.2  # коэффициент дальности игрока
+        self.missiles = pygame.sprite.Group()
+        self.permission = permission_shoot
 
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
@@ -101,6 +109,10 @@ class Player(pygame.sprite.Sprite):
         if input_keys[pygame.K_SPACE] and self.ground:
             self.direction.y = self.jump_coef
             self.dust_jump(self.rect.midbottom)
+        if input_keys[pygame.K_c] and self.permission():
+            # игрок стреляет
+            missile = Missile(Player.PATH_FOLDER_MISSILES, self, 10, self.koef_distance)
+            self.missiles.add(missile)
 
     def gravitation(self):
         '''Изменение положения игрока под действием силы тяжести'''

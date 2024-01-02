@@ -34,4 +34,4 @@ while True:
     scene.run(event, screen)
     pygame.display.flip()
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(FPS)
