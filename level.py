@@ -15,7 +15,8 @@ class Level:
     def __init__(self, data_level, screen):
         # общая настройка
         self.display = screen
-        self.world_shift = pygame.math.Vector2(0, 0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
+        self.world_shift = pygame.math.Vector2(0,
+                                               0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
         self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы
         self.background_image = pygame.image.load(data_level['background'])
 
@@ -56,6 +57,14 @@ class Level:
         # враги
         enemies_map = import_csv_map(data_level['enemies'])
         self.enemies = self.create_tiles_group(enemies_map, 'enemy')
+
+        # музыка
+        self.music = pygame.mixer.Sound("sound/game_music.mp3")
+        self.channel = pygame.mixer.Channel(0)
+
+        # звук приземления
+        self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
+        self.channel = pygame.mixer.Channel(1)
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
@@ -125,6 +134,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
+            self.land_sound.play()  # звук падения
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -218,7 +228,8 @@ class Level:
         if missile.speed < 0:
             x, y = missile.rect.topleft - pygame.math.Vector2(22, 0)  # координаты левого верхнего угла снаряда + сдвиг
         else:
-            x, y = missile.rect.topright - pygame.math.Vector2(22, 0) # координаты правого верхнего угла снаряда + сдвиг
+            x, y = missile.rect.topright - pygame.math.Vector2(22,
+                                                               0)  # координаты правого верхнего угла снаряда + сдвиг
         self.explosion_sprite = Explosion(64, x, y, Level.PATH_EXP, k_animate=0.3)
         self.explosions.add(self.explosion_sprite)
 
@@ -285,3 +296,9 @@ class Level:
 
     def update(self, event):
         pass
+
+    def start_music(self):
+        self.channel.play(self.music, loops=-1, fade_ms=5000)
+
+    def stop_music(self):
+        self.channel.stop()

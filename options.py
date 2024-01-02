@@ -131,5 +131,4 @@ class Options:
                 action = item.update(event.pos)
                 if action is not None:
                     return action
-
         return None
