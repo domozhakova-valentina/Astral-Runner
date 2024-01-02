@@ -42,12 +42,18 @@ class Player(pygame.sprite.Sprite):
         self.missiles = pygame.sprite.Group()
         self.permission = permission_shoot
 
+        # звук шагов
+        self.step_sound = pygame.mixer.Sound("sound/step.wav")
+        self.channel = pygame.mixer.Channel(1)
+
+
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
 
     def animate_run_dust(self):
         '''Анимация частиц пыли из-под ног при беги.'''
         if self.action == 'run' and self.ground:
+            self.step_sound.play()  # Звук шагов
             self.dust_index_cadre += self.dust_an_speed
             if self.dust_index_cadre > len(self.dustes_run):
                 self.dust_index_cadre = 0
