@@ -10,7 +10,8 @@ class Level:
     def __init__(self, data_level, screen):
         # общая настройка
         self.display = screen
-        self.world_shift = pygame.math.Vector2(0, 0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
+        self.world_shift = pygame.math.Vector2(0,
+                                               0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
 
         # игрока
         player_map = import_csv_map(data_level['player'])
@@ -34,6 +35,14 @@ class Level:
 
         # пыль от ног игрока
         self.particles_dust_sprite = pygame.sprite.GroupSingle()
+
+        # музыка
+        self.music = pygame.mixer.Sound("sound/game_music.mp3")
+        self.channel = pygame.mixer.Channel(0)
+
+        # звук приземления
+        self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
+        self.channel = pygame.mixer.Channel(1)
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
@@ -91,6 +100,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
+            self.land_sound.play()
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -187,6 +197,12 @@ class Level:
         # отображение пыли
         self.particles_dust_sprite.update(self.world_shift)
         self.particles_dust_sprite.draw(self.display)
+
+    def start_music(self):
+        self.channel.play(self.music, loops=-1, fade_ms=5000)
+
+    def stop_music(self):
+        self.channel.stop()
 
     def update(self, event):
         pass

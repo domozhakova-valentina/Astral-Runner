@@ -5,11 +5,14 @@ from level import Level
 from menu import Menu, items
 from options import Options, options_items
 
+
+pygame.mixer.pre_init(44100, -16, 1, 512) # для нормального звука
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
 scene = menu = Menu(items)
+menu.start_music()
 options = Options(options_items)
 level = Level(level_0, screen)  # создание уровня
 clock = pygame.time.Clock()
@@ -23,14 +26,16 @@ while True:
         change = scene.update(event)
         if change is not None:
             game_state = change()
-    if game_state == 'running_game':
-        scene = level
-    if game_state == 'running_menu':
-        scene = menu
-    if game_state == 'running_options':
-        scene = options
-    if game_state == 'running_rules':
-        pass
+            scene.stop_music()
+            if game_state == 'running_game':
+                scene = level
+            if game_state == 'running_menu':
+                scene = menu
+            if game_state == 'running_options':
+                scene = options
+            if game_state == 'running_rules':
+                pass
+            scene.start_music()
     scene.run(event, screen)
     pygame.display.flip()
     pygame.display.update()
