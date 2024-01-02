@@ -46,7 +46,6 @@ class Player(pygame.sprite.Sprite):
         self.step_sound = pygame.mixer.Sound("sound/step.wav")
         self.channel = pygame.mixer.Channel(1)
 
-
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
 
