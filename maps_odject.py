@@ -25,26 +25,27 @@ class StaticTile(MainTile):
 
 
 class AnimatedDecor(MainTile):
-    def __init__(self, size, x, y, path):
+    def __init__(self, size, x, y, path, k_animate=0.2):
         super().__init__(size, x, y)
         self.cadres = import_folder_images(path)
         self.index_cadre = 0
         self.image = self.cadres[self.index_cadre]
+        self.k_animate = k_animate
 
     def animation(self):
-        self.index_cadre += 0.2  # увеличение индекса кадра для перелистования на новый
+        self.index_cadre += self.k_animate  # увеличение индекса кадра для перелистования на новый
         if self.index_cadre > len(self.cadres):  # возвращение к началу кадров
             self.index_cadre = 0
         self.image = self.cadres[int(self.index_cadre)]
 
-    def update(self, x_shift):
+    def update(self, shift):
         self.animation()
-        super().update(x_shift)
+        super().update(shift)
 
 
 class CuttingObject(AnimatedDecor):
-    def __init__(self, size, x, y, path):
-        super().__init__(size, x, y, path)
+    def __init__(self, size, x, y, path, k_animate=0.2):
+        super().__init__(size, x, y, path, k_animate)
         x, y = x + size // 2, y + size  # переопределение координат установки изображения
         self.rect = self.image.get_rect(midbottom=(x, y))
 
