@@ -7,6 +7,7 @@ from settings import FPS
 class Player(pygame.sprite.Sprite):
     PATH_RUN_DUST = 'graphics/character_animate/particles_character/run/'
     PATH_FOLDER_MISSILES = 'graphics/character/shot'
+    HEALTH = 120
 
     def __init__(self, position, screen, character_path, dust_jump, permission_shoot, speed=5):
         super().__init__()
@@ -80,9 +81,9 @@ class Player(pygame.sprite.Sprite):
         if self.action == 'idle' and int(self.index_cadre) == 1:  # для удержания игрока стоящим при приседании
             self.rect = self.rect.move(0, 3)
         if self.ground and self.right:
-            self.rect = self.image.get_rect(bottomright=self.rect.bottomright - pygame.math.Vector2(6, 0))
+            self.rect = self.image.get_rect(bottomright=self.rect.bottomright - pygame.math.Vector2(7, 0))
         elif self.ground and self.left:
-            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft + pygame.math.Vector2(6, 0))
+            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft + pygame.math.Vector2(7, 0))
         elif self.ceiling and self.right:
             self.rect = self.image.get_rect(topright=self.rect.topright)
         elif self.ceiling and self.left:
