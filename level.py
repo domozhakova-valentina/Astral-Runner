@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 from settings import tile_size, screen_width, screen_height
 from load import import_csv_map, import_folder_images, import_folder_folder
@@ -5,7 +7,7 @@ from maps_odject import StaticTile, CuttingObject, Coin, MainTile
 from player import Player
 from dust_particle import Particle
 from enemies import MainEnemy
-from scales import RechargeScale
+from scales import RechargeScale, HealthBar
 from explosions import Explosion
 
 
@@ -17,8 +19,9 @@ class Level:
         self.display = screen
         self.world_shift = pygame.math.Vector2(0,
                                                0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
-        self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы
+        self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы игрока
         self.background_image = pygame.image.load(data_level['background'])
+        self.damage_player = data_level['damage player']
 
         # спрайты взрывов
         self.explosions = pygame.sprite.Group()
@@ -115,6 +118,7 @@ class Level:
 
     def load_scales(self, color_text):
         self.missile_scale = RechargeScale((10, 10), color_text)
+        self.healh_scale = HealthBar((10, 40), 1.8, 20, Player.HEALTH, color_text)
 
     def jump_dust(self, x_y):
         '''Записывает частицы прыжка в текущие частицы вертикального движения.'''
@@ -218,10 +222,13 @@ class Level:
                     self.generate_explosion(missile)
                     missile.kill()
         for sprite in enemy:  # переборка врагов
+            if 0 < sprite.rect.topleft[0] < screen_width and 0 < sprite.rect.topleft[1] < screen_height:
+                sprite.health_scale.draw(self.display)  # рисование шкалы здоровья врага
             for missile in missiles:
                 if pygame.sprite.collide_mask(missile, sprite):
                     self.generate_explosion(missile)
-                    sprite.kill()
+                    if sprite.health_scale.change_health(self.damage_player):  # снимаются жизни у врага
+                        sprite.kill()
                     missile.kill()
 
     def generate_explosion(self, missile):
@@ -233,10 +240,24 @@ class Level:
         self.explosion_sprite = Explosion(64, x, y, Level.PATH_EXP, k_animate=0.3)
         self.explosions.add(self.explosion_sprite)
 
+    def player_kill(self):
+        player = self.player.sprite
+        sprites = self.enemies.sprites() + self.obstacles.sprites()  # спрайты от которых игрок, может, получит урон
+        for sprite in sprites:
+            if pygame.sprite.collide_mask(player, sprite):
+                if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
+                                                  else 1):  # изменяется шкала здоровья
+                    # если здоровье закончилось, то игрок умирает
+                    player.kill()
+                    sys.exit()
+
     def run(self, screen, event):
         '''Запуск уровня!'''
         # рисование фона
         self.display.blit(self.background_image, (0, 0))
+
+        # обработка урона
+        self.player_kill()
 
         # обработка столкновения снаряда player's
         self.collision_missile_player()
@@ -260,8 +281,9 @@ class Level:
         # рисование пуль
         self.player.sprite.missiles.draw(self.display)
 
-        # рисование шкалы перезарядки и относящейся к нему текст
+        # рисование шкалы относящихся к нему текст
         self.missile_scale.draw(self.display)
+        self.healh_scale.draw(self.display)
 
         # местность
         self.terrain_sprites.draw(self.display)

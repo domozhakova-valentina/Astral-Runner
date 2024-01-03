@@ -29,7 +29,7 @@ class RechargeScale:
         font = pygame.font.SysFont(None, RechargeScale.SIZE_FONT)
         # Создание текста
         text = font.render(word, True, self.color_text)
-        # Отображение текста в центре окна
+        # Отображение текста
         text_rect = text.get_rect(topleft=(self.x, self.y))
         screen.blit(text, text_rect)
         new_x = self.x + 10 * RechargeScale.SIZE_FONT // 2  # сдвиг по x
@@ -43,3 +43,52 @@ class RechargeScale:
         pygame.draw.line(screen, RechargeScale.COLOR_OUTLINE, (new_x + self.max_value // 3 * 2, self.y),
                          (new_x + self.max_value // 3 * 2, self.y + 18), 2)
 
+
+class HealthBar:
+    SIZE_FONT = 25
+    COLOR_OUTLINE = (255, 255, 255)
+
+    def __init__(self, position, k_width, height, max_health, text_color, flag_frame_text=True,
+                 color_scale=(0, 255, 0)):
+        self.color_scale = color_scale
+        self.x, self.y = position
+        self.k_width = k_width
+        self.width = self.k_width * max_health
+        self.height = height
+        self.max_health = max_health
+        self.health = max_health
+        self.color_text = text_color
+        self.flag_frame_text = flag_frame_text
+        if self.flag_frame_text:  # нужно для того чтобы у жизней монстров не было рамки
+            self.word = 'Здоровье:'
+            self.new_x = self.x + len(self.word) * HealthBar.SIZE_FONT // 2  # сдвиг по x
+            self.outline_points = [(self.new_x, self.y), (self.new_x + self.width, self.y),
+                                   (self.new_x + self.width - self.height, self.y + self.height),
+                                   (self.new_x - 20, self.y + self.height)]
+        else:
+            self.new_x = self.x
+
+    def draw(self, screen):
+        # Рассчитываем ширину зеленой полоски, чтобы отображать текущее здоровье
+        self.width = self.k_width * self.health
+        points = [(self.new_x, self.y), (self.new_x + self.width, self.y),
+                  (self.new_x + self.width - self.height, self.y + self.height),
+                  (self.new_x - self.height, self.y + self.height)]
+        pygame.draw.polygon(screen, self.color_scale, points)
+        if self.flag_frame_text:
+            # Шрифт
+            font = pygame.font.SysFont(None, HealthBar.SIZE_FONT)
+            # Создание текста
+            text = font.render(self.word, True, self.color_text)
+            # Отображение текста
+            text_rect = text.get_rect(topleft=(self.x, self.y))
+            screen.blit(text, text_rect)
+        if self.flag_frame_text:  # нужно для того чтобы у жизней монстров не было рамки
+            pygame.draw.polygon(screen, HealthBar.COLOR_OUTLINE, self.outline_points, 2)
+
+    def change_health(self, damage):
+        '''Изменяет и отслеживает уровень здоровья.'''
+        self.health -= damage
+        if self.health <= 0:
+            return True
+        return False
