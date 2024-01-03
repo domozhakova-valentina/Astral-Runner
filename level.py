@@ -22,6 +22,8 @@ class Level:
         self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы игрока
         self.background_image = pygame.image.load(data_level['background'])
         self.damage_player = data_level['damage player']
+        self.counter_coins = 0
+        self.coin_image = pygame.image.load('graphics/coins/0.png')
 
         # спрайты взрывов
         self.explosions = pygame.sprite.Group()
@@ -251,6 +253,24 @@ class Level:
                     player.kill()
                     sys.exit()
 
+    def collision_with_coins(self):
+        sprite = self.player.sprite
+        size_font = 32
+        for coin in self.coins:
+            if pygame.sprite.collide_mask(coin, sprite):
+                coin.kill()
+                self.counter_coins += 1
+        self.display.blit(self.coin_image, (screen_width - self.coin_image.get_width(), 0))
+        # Шрифт
+        font = pygame.font.SysFont(None, size_font)
+        # Создание текста
+        text = font.render(str(self.counter_coins), True, (0, 0, 250))
+        # Отображение текста
+        text_rect = text.get_rect(topleft=(screen_width -
+                                           len(str(self.counter_coins)) *
+                                           size_font // 2 - self.coin_image.get_width(), 6))
+        self.display.blit(text, text_rect)
+
     def run(self, screen, event):
         '''Запуск уровня!'''
         # рисование фона
@@ -315,6 +335,9 @@ class Level:
 
         # рисование взрыва
         self.explosions.draw(self.display)
+
+        # обработка столкновения с монетами
+        self.collision_with_coins()
 
     def update(self, event):
         pass
