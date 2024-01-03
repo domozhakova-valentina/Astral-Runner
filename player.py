@@ -80,9 +80,9 @@ class Player(pygame.sprite.Sprite):
         if self.action == 'idle' and int(self.index_cadre) == 1:  # для удержания игрока стоящим при приседании
             self.rect = self.rect.move(0, 3)
         if self.ground and self.right:
-            self.rect = self.image.get_rect(bottomright=self.rect.bottomright)
+            self.rect = self.image.get_rect(bottomright=self.rect.bottomright - pygame.math.Vector2(6, 0))
         elif self.ground and self.left:
-            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft)
+            self.rect = self.image.get_rect(bottomleft=self.rect.bottomleft + pygame.math.Vector2(6, 0))
         elif self.ceiling and self.right:
             self.rect = self.image.get_rect(topright=self.rect.topright)
         elif self.ceiling and self.left:
