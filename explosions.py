@@ -7,7 +7,6 @@ class Explosion(AnimatedDecor):
         super().__init__(size, x, y, path, k_animate)
         # звук взрыва
         self.explosion_sound = "sound/explosion.mp3"
-        all_sounds.add_sound(self.explosion_sound)
         self.start_sound = True # чтобы звук был проигран только один раз
 
     def animation(self):

@@ -46,7 +46,6 @@ class Player(pygame.sprite.Sprite):
 
         # звук шагов
         self.step_sound = "sound/step.wav"
-        all_sounds.add_sound(self.step_sound)
 
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)

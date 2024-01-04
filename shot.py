@@ -17,7 +17,6 @@ class Missile(pygame.sprite.Sprite):
 
         # звук выстрела
         self.shot_sound = "sound/shot.wav"
-        all_sounds.add_sound(self.shot_sound)
 
     def get_position(self):
         '''Координаты с учётом всех смещений.'''
