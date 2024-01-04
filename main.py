@@ -7,7 +7,7 @@ from game_over import Game_over, buttons
 from options import Options, options_items
 
 pygame.init()
-pygame.mixer.set_num_channels(20) # устанавливаем больше звуковых каналов
+pygame.mixer.set_num_channels(100)  # устанавливаем больше звуковых каналов
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
