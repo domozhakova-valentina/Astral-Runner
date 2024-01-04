@@ -9,6 +9,7 @@ from dust_particle import Particle
 from enemies import MainEnemy
 from scales import RechargeScale, HealthBar
 from explosions import Explosion
+from sounds import all_sounds, background_music
 
 
 class Level:
@@ -48,6 +49,10 @@ class Level:
         coins_map = import_csv_map(data_level['coins'])
         self.coins = self.create_tiles_group(coins_map, 'coins')
 
+        # звук сбора монет
+        self.coin_sound = "sound/get_coin.wav"
+        all_sounds.add_sound(self.coin_sound)
+
         # режущие препятствия
         cutting_object_map = import_csv_map(data_level['obstacles'])
         self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles')
@@ -64,12 +69,16 @@ class Level:
         self.enemies = self.create_tiles_group(enemies_map, 'enemy')
 
         # музыка
-        self.music = pygame.mixer.Sound("sound/game_music.mp3")
-        self.channel = pygame.mixer.Channel(0)
+        self.music = "sound/game_music.mp3"
+        background_music.add_music(self.music)
 
         # звук приземления
-        self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
-        self.channel = pygame.mixer.Channel(1)
+        self.land_sound = 'sound/jump.ogg'
+        all_sounds.add_sound(self.land_sound)
+
+        # звук повреждения игрока
+        self.damage_sound = 'sound/damage.mp3'
+        all_sounds.add_sound(self.damage_sound)
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
@@ -140,7 +149,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
-            self.land_sound.play()  # звук падения
+            all_sounds.play_sound(self.land_sound) # звук падения
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -247,6 +256,7 @@ class Level:
         sprites = self.enemies.sprites() + self.obstacles.sprites()  # спрайты от которых игрок, может, получит урон
         for sprite in sprites:
             if pygame.sprite.collide_mask(player, sprite):
+                all_sounds.play_sound(self.damage_sound)
                 if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
                                                   else 1):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
@@ -258,6 +268,7 @@ class Level:
         size_font = 32
         for coin in self.coins:
             if pygame.sprite.collide_mask(coin, sprite):
+                all_sounds.play_sound(self.coin_sound) # звук сбора монет
                 coin.kill()
                 self.counter_coins += 1
         self.display.blit(self.coin_image, (screen_width - self.coin_image.get_width(), 0))
@@ -343,7 +354,7 @@ class Level:
         pass
 
     def start_music(self):
-        self.channel.play(self.music, loops=-1, fade_ms=5000)
+        background_music.play_music(self.music)
 
     def stop_music(self):
-        self.channel.stop()
+        background_music.stop_music(self.music)

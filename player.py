@@ -2,6 +2,7 @@ import pygame
 from load import import_folder_images
 from shot import Missile
 from settings import FPS
+from sounds import all_sounds
 
 
 class Player(pygame.sprite.Sprite):
@@ -44,8 +45,8 @@ class Player(pygame.sprite.Sprite):
         self.permission = permission_shoot
 
         # звук шагов
-        self.step_sound = pygame.mixer.Sound("sound/step.wav")
-        self.channel = pygame.mixer.Channel(1)
+        self.step_sound = "sound/step.wav"
+        all_sounds.add_sound(self.step_sound)
 
     def import_particles_run(self):
         self.dustes_run = import_folder_images(Player.PATH_RUN_DUST)
@@ -53,7 +54,7 @@ class Player(pygame.sprite.Sprite):
     def animate_run_dust(self):
         '''Анимация частиц пыли из-под ног при беги.'''
         if self.action == 'run' and self.ground:
-            self.step_sound.play()  # Звук шагов
+            all_sounds.play_sound(self.step_sound)  # Звук шагов
             self.dust_index_cadre += self.dust_an_speed
             if self.dust_index_cadre > len(self.dustes_run):
                 self.dust_index_cadre = 0

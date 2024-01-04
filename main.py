@@ -5,9 +5,8 @@ from level import Level
 from menu import Menu, items
 from options import Options, options_items
 
-
-pygame.mixer.pre_init(44100, -16, 1, 512) # для нормального звука
 pygame.init()
+pygame.mixer.set_num_channels(20) # устанавливаем больше звуковых каналов
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
