@@ -7,8 +7,8 @@ class All_Sounds:
         self.sounds_volume = 1
         self.channels_num = 2
 
-    def change_sounds_volume(self):
-        self.sounds_volume = 1 - self.sounds_volume
+    def change_sounds_volume(self, num):
+        self.sounds_volume = 1 - num
         for val in self.sounds.values():
             val[0].set_volume(self.sounds_volume)
 
@@ -53,6 +53,10 @@ class Background_music:
         music, channel = self.music[name]
         channel.pause()
 
+
+sounds_list = ['sound/damage.mp3', 'sound/explosion.mp3', 'sound/get_coin.wav', 'sound/jump.ogg', 'sound/shot.wav',
+               'sound/step.wav']
+music_list = ['sound/menu_music.mp3', 'sound/game_music.mp3']
 
 all_sounds = All_Sounds()
 background_music = Background_music()

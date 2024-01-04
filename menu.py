@@ -19,7 +19,6 @@ class Menu:
         self.items = items
         self.fon = pygame.image.load('menu/fon.jpg')
         self.music = "sound/menu_music.mp3"
-        background_music.add_music(self.music)
 
     def start_music(self):
         background_music.play_music(self.music)

@@ -49,12 +49,13 @@ def menu_action():
     return 'running_menu'
 
 
-def active_sound():
-    all_sounds.change_sounds_volume()
+def active_sound(num):
+    all_sounds.change_sounds_volume(num)
 
 
-def active_music():
-    background_music.change_music_volume(0)
+def active_music(num):
+    num = 1 - num
+    background_music.change_music_volume(num)
 
 
 def change_music_loud(num):

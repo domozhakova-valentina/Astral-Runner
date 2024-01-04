@@ -95,7 +95,7 @@ class Toggle:
             else:
                 self.image = self.images[0]
                 self.image_count = 0
-            self.action()
+            self.action(self.image_count)
         return None
 
 

@@ -76,15 +76,12 @@ class Level:
 
         # музыка
         self.music = "sound/game_music.mp3"
-        background_music.add_music(self.music)
 
         # звук приземления
         self.land_sound = 'sound/jump.ogg'
-        all_sounds.add_sound(self.land_sound)
 
         # звук повреждения игрока
         self.damage_sound = 'sound/damage.mp3'
-        all_sounds.add_sound(self.damage_sound)
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
