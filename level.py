@@ -203,7 +203,8 @@ class Level:
     def enemy_reverse(self):
         '''Определяет столкновение с ограничениями и разворачивает врага.'''
         for enemy in self.enemies.sprites():
-            if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
+            sprite_collision = pygame.sprite.spritecollide(enemy, self.limitations_enemy, False)
+            if sprite_collision:
                 enemy.turn()
 
     def collision_missile_player(self):
@@ -245,8 +246,8 @@ class Level:
         self.terrain_sprites.update(self.world_shift)
         self.fg_decorations.update(self.world_shift)
         self.limitations_enemy.update(self.world_shift)
-        self.enemy_reverse()
         self.enemies.update(self.world_shift)
+        self.enemy_reverse()
         self.coins.update(self.world_shift)
         self.start.update(self.world_shift)
         self.purpose.update(self.world_shift)
