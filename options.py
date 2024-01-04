@@ -59,7 +59,7 @@ class Slider:
         if self.on_slider_hold(coords[0], coords[1]):
             x, y = pygame.mouse.get_pos()
             self.handle_event(x)
-            return self.action
+            self.action(self.volume / 100)
         return None
 
 
@@ -95,7 +95,7 @@ class Toggle:
             else:
                 self.image = self.images[0]
                 self.image_count = 0
-            return self.action
+            self.action()
         return None
 
 
@@ -111,7 +111,7 @@ options_items = [Slider(300, 600, 500, 20, change_music_loud, 'Громкост�
 class Options:
     def __init__(self, items):
         self.items = items
-        font = pygame.font.SysFont(None, 30)
+        self.music = "sound/menu_music.mp3"
 
     def run(self, event, screen):
         # код для рисования меню на экране
@@ -132,3 +132,9 @@ class Options:
                 if action is not None:
                     return action
         return None
+
+    def start_music(self):
+        background_music.play_music(self.music)
+
+    def stop_music(self):
+        background_music.stop_music(self.music)

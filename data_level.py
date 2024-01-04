@@ -8,5 +8,6 @@ level_0 = {
 		'enemies': 'levels/0/0_level_monsters.csv',
 	    'background': 'graphics/background/level_0_Mars.png',
 		'color_text_scale': (100, 100, 80),
-		'damage player':  5
+		'damage player':  5,
+		'asteroid_generation_coefficient': 0
 }

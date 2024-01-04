@@ -1,5 +1,6 @@
 from buttons_functions import *
 from settings import *
+from sounds import background_music
 import pygame
 
 # создаем список пунктов меню
@@ -17,14 +18,14 @@ class Menu:
     def __init__(self, items):
         self.items = items
         self.fon = pygame.image.load('menu/fon.jpg')
-        self.music = pygame.mixer.Sound("sound/menu_music.mp3")
-        self.channel = pygame.mixer.Channel(0)
+        self.music = "sound/menu_music.mp3"
+        background_music.add_music(self.music)
 
     def start_music(self):
-        self.channel.play(self.music, loops=-1, fade_ms=5000)
+        background_music.play_music(self.music)
 
     def stop_music(self):
-        self.channel.stop()
+        background_music.stop_music(self.music)
 
     def run(self, event, screen):
         # код для рисования меню на экране

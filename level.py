@@ -1,4 +1,5 @@
 import sys
+from random import randrange
 
 import pygame
 from settings import tile_size, screen_width, screen_height
@@ -9,10 +10,14 @@ from dust_particle import Particle
 from enemies import MainEnemy
 from scales import RechargeScale, HealthBar
 from explosions import Explosion
+from sounds import all_sounds, background_music
+from asteroids import Asteroid
 
 
 class Level:
     PATH_EXP = 'graphics/explosions/1'
+    PATH_ASTEROID = 'graphics/animate_asteroid/'
+    PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
         # общая настройка
@@ -24,6 +29,8 @@ class Level:
         self.damage_player = data_level['damage player']
         self.counter_coins = 0
         self.coin_image = pygame.image.load('graphics/coins/0.png')
+        self.k_generation_asteroid = data_level['asteroid_generation_coefficient']
+        self.asteroids = pygame.sprite.Group()
 
         # спрайты взрывов
         self.explosions = pygame.sprite.Group()
@@ -48,6 +55,10 @@ class Level:
         coins_map = import_csv_map(data_level['coins'])
         self.coins = self.create_tiles_group(coins_map, 'coins')
 
+        # звук сбора монет
+        self.coin_sound = "sound/get_coin.wav"
+        all_sounds.add_sound(self.coin_sound)
+
         # режущие препятствия
         cutting_object_map = import_csv_map(data_level['obstacles'])
         self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles')
@@ -64,16 +75,21 @@ class Level:
         self.enemies = self.create_tiles_group(enemies_map, 'enemy')
 
         # музыка
-        self.music = pygame.mixer.Sound("sound/game_music.mp3")
-        self.channel = pygame.mixer.Channel(0)
+        self.music = "sound/game_music.mp3"
+        background_music.add_music(self.music)
 
         # звук приземления
-        self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
-        self.channel = pygame.mixer.Channel(1)
+        self.land_sound = 'sound/jump.ogg'
+        all_sounds.add_sound(self.land_sound)
+
+        # звук повреждения игрока
+        self.damage_sound = 'sound/damage.mp3'
+        all_sounds.add_sound(self.damage_sound)
 
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
+        sprite = None
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
@@ -96,7 +112,8 @@ class Level:
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
                         sprite = MainEnemy(tile_size, x, y, path)
-                    all_group.add(sprite)
+                    if sprite is not None:
+                        all_group.add(sprite)
         return all_group
 
     def load_player(self, map):
@@ -140,7 +157,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
-            self.land_sound.play()  # звук падения
+            all_sounds.play_sound(self.land_sound) # звук падения
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -209,7 +226,8 @@ class Level:
     def enemy_reverse(self):
         '''Определяет столкновение с ограничениями и разворачивает врага.'''
         for enemy in self.enemies.sprites():
-            if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
+            sprite_collision = pygame.sprite.spritecollide(enemy, self.limitations_enemy, False)
+            if sprite_collision:
                 enemy.turn()
 
     def collision_missile_player(self):
@@ -247,6 +265,7 @@ class Level:
         sprites = self.enemies.sprites() + self.obstacles.sprites()  # спрайты от которых игрок, может, получит урон
         for sprite in sprites:
             if pygame.sprite.collide_mask(player, sprite):
+                all_sounds.play_sound(self.damage_sound)
                 if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
                                                   else 1):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
@@ -258,6 +277,7 @@ class Level:
         size_font = 32
         for coin in self.coins:
             if pygame.sprite.collide_mask(coin, sprite):
+                all_sounds.play_sound(self.coin_sound) # звук сбора монет
                 coin.kill()
                 self.counter_coins += 1
         self.display.blit(self.coin_image, (screen_width - self.coin_image.get_width(), 0))
@@ -270,6 +290,43 @@ class Level:
                                            len(str(self.counter_coins)) *
                                            size_font // 2 - self.coin_image.get_width(), 6))
         self.display.blit(text, text_rect)
+
+    def win_player(self):
+        '''Проверяет выиграл ли прошёл ли игрок уровень.'''
+        player = self.player.sprite
+        end = self.purpose.sprite
+        if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
+            print('Win')
+            sys.exit()
+
+    def generation_asteroids(self):
+        '''Генерируются рандомно астероиды в соответствие с коэффициентом.'''
+        for n in range(self.k_generation_asteroid):
+            r = randrange(10001)
+            if r == 10:
+                asteroid = Asteroid(128, Level.PATH_ASTEROID, k_animate=0.1)
+                self.asteroids.add(asteroid)
+        self.asteroids.update(self.world_shift)
+        self.asteroids.draw(self.display)
+
+    def collision_with_asteroids(self):
+        limitations_sprites = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        player_sprite = self.player.sprite
+        asteroids = self.asteroids.sprites()
+
+        for sprite in asteroids:
+            if pygame.sprite.collide_mask(player_sprite, sprite):
+                # игрок умирает
+                player_sprite.kill()
+                sys.exit()
+
+        for sprite in limitations_sprites:
+            for asteroid in asteroids:
+                if pygame.sprite.collide_mask(asteroid, sprite):
+                    x, y = asteroid.rect.center
+                    asteroid.kill()
+                    self.explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(self.explosion_sprite)
 
     def run(self, screen, event):
         '''Запуск уровня!'''
@@ -286,8 +343,8 @@ class Level:
         self.terrain_sprites.update(self.world_shift)
         self.fg_decorations.update(self.world_shift)
         self.limitations_enemy.update(self.world_shift)
-        self.enemy_reverse()
         self.enemies.update(self.world_shift)
+        self.enemy_reverse()
         self.coins.update(self.world_shift)
         self.start.update(self.world_shift)
         self.purpose.update(self.world_shift)
@@ -339,11 +396,18 @@ class Level:
         # обработка столкновения с монетами
         self.collision_with_coins()
 
+        self.collision_with_asteroids()  # столкновения всего с астероидами
+        # генерация астероидов и отображение их
+        self.generation_asteroids()
+
+        # проверка(прошёл игрок уровень)
+        self.win_player()
+
     def update(self, event):
         pass
 
     def start_music(self):
-        self.channel.play(self.music, loops=-1, fade_ms=5000)
+        background_music.play_music(self.music)
 
     def stop_music(self):
-        self.channel.stop()
+        background_music.stop_music(self.music)
