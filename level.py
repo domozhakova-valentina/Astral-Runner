@@ -74,6 +74,7 @@ class Level:
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
+        sprite = None
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
@@ -96,7 +97,8 @@ class Level:
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
                         sprite = MainEnemy(tile_size, x, y, path)
-                    all_group.add(sprite)
+                    if sprite is not None:
+                        all_group.add(sprite)
         return all_group
 
     def load_player(self, map):
@@ -272,6 +274,14 @@ class Level:
                                            size_font // 2 - self.coin_image.get_width(), 6))
         self.display.blit(text, text_rect)
 
+    def win_player(self):
+        '''Проверяет выиграл ли прошёл ли игрок уровень.'''
+        player = self.player.sprite
+        end = self.purpose.sprite
+        if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
+            print('Win')
+            sys.exit()
+
     def run(self, screen, event):
         '''Запуск уровня!'''
         # рисование фона
@@ -339,6 +349,9 @@ class Level:
 
         # обработка столкновения с монетами
         self.collision_with_coins()
+
+        # проверка(прошёл игрок уровень)
+        self.win_player()
 
     def update(self, event):
         pass
