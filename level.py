@@ -1,4 +1,5 @@
 import sys
+from random import randrange
 
 import pygame
 from settings import tile_size, screen_width, screen_height
@@ -10,10 +11,13 @@ from enemies import MainEnemy
 from scales import RechargeScale, HealthBar
 from explosions import Explosion
 from sounds import all_sounds, background_music
+from asteroids import Asteroid
 
 
 class Level:
     PATH_EXP = 'graphics/explosions/1'
+    PATH_ASTEROID = 'graphics/animate_asteroid/'
+    PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
         # общая настройка
@@ -25,6 +29,8 @@ class Level:
         self.damage_player = data_level['damage player']
         self.counter_coins = 0
         self.coin_image = pygame.image.load('graphics/coins/0.png')
+        self.k_generation_asteroid = data_level['asteroid_generation_coefficient']
+        self.asteroids = pygame.sprite.Group()
 
         # спрайты взрывов
         self.explosions = pygame.sprite.Group()
@@ -83,6 +89,7 @@ class Level:
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
+        sprite = None
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
@@ -105,7 +112,8 @@ class Level:
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
                         sprite = MainEnemy(tile_size, x, y, path)
-                    all_group.add(sprite)
+                    if sprite is not None:
+                        all_group.add(sprite)
         return all_group
 
     def load_player(self, map):
@@ -218,7 +226,8 @@ class Level:
     def enemy_reverse(self):
         '''Определяет столкновение с ограничениями и разворачивает врага.'''
         for enemy in self.enemies.sprites():
-            if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
+            sprite_collision = pygame.sprite.spritecollide(enemy, self.limitations_enemy, False)
+            if sprite_collision:
                 enemy.turn()
 
     def collision_missile_player(self):
@@ -282,6 +291,43 @@ class Level:
                                            size_font // 2 - self.coin_image.get_width(), 6))
         self.display.blit(text, text_rect)
 
+    def win_player(self):
+        '''Проверяет выиграл ли прошёл ли игрок уровень.'''
+        player = self.player.sprite
+        end = self.purpose.sprite
+        if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
+            print('Win')
+            sys.exit()
+
+    def generation_asteroids(self):
+        '''Генерируются рандомно астероиды в соответствие с коэффициентом.'''
+        for n in range(self.k_generation_asteroid):
+            r = randrange(10001)
+            if r == 10:
+                asteroid = Asteroid(128, Level.PATH_ASTEROID, k_animate=0.1)
+                self.asteroids.add(asteroid)
+        self.asteroids.update(self.world_shift)
+        self.asteroids.draw(self.display)
+
+    def collision_with_asteroids(self):
+        limitations_sprites = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        player_sprite = self.player.sprite
+        asteroids = self.asteroids.sprites()
+
+        for sprite in asteroids:
+            if pygame.sprite.collide_mask(player_sprite, sprite):
+                # игрок умирает
+                player_sprite.kill()
+                sys.exit()
+
+        for sprite in limitations_sprites:
+            for asteroid in asteroids:
+                if pygame.sprite.collide_mask(asteroid, sprite):
+                    x, y = asteroid.rect.center
+                    asteroid.kill()
+                    self.explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(self.explosion_sprite)
+
     def run(self, screen, event):
         '''Запуск уровня!'''
         # рисование фона
@@ -297,8 +343,8 @@ class Level:
         self.terrain_sprites.update(self.world_shift)
         self.fg_decorations.update(self.world_shift)
         self.limitations_enemy.update(self.world_shift)
-        self.enemy_reverse()
         self.enemies.update(self.world_shift)
+        self.enemy_reverse()
         self.coins.update(self.world_shift)
         self.start.update(self.world_shift)
         self.purpose.update(self.world_shift)
@@ -349,6 +395,13 @@ class Level:
 
         # обработка столкновения с монетами
         self.collision_with_coins()
+
+        self.collision_with_asteroids()  # столкновения всего с астероидами
+        # генерация астероидов и отображение их
+        self.generation_asteroids()
+
+        # проверка(прошёл игрок уровень)
+        self.win_player()
 
     def update(self, event):
         pass

@@ -1,4 +1,3 @@
-import pygame
 from maps_odject import AnimatedDecor
 from sounds import all_sounds
 
