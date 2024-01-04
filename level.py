@@ -2,7 +2,7 @@ import sys
 from random import randrange
 
 import pygame
-from settings import tile_size, screen_width, screen_height
+from settings import screen_width, screen_height
 from load import import_csv_map, import_folder_images, import_folder_folder
 from maps_odject import StaticTile, CuttingObject, Coin, MainTile
 from player import Player
@@ -24,6 +24,7 @@ class Level:
         self.display = screen
         self.world_shift = pygame.math.Vector2(0,
                                                0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
+        self.tile_size = data_level['tile size']
         self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы игрока
         self.background_image = pygame.image.load(data_level['background'])
         self.damage_player = data_level['damage player']
@@ -41,19 +42,19 @@ class Level:
         self.purpose = pygame.sprite.GroupSingle()
         self.start = pygame.sprite.GroupSingle()
         self.x = None
-        self.load_player(player_map)
+        self.load_player(player_map, data_level['gravity_player'])
 
         # настройка рельефа местности(плиток)
         terrain_map = import_csv_map(data_level['terrain'])
-        self.terrain_sprites = self.create_tiles_group(terrain_map, 'terrain')
+        self.terrain_sprites = self.create_tiles_group(terrain_map, 'terrain', data_level)
 
         # различные декорации которые выступают как препятствия
         decorations_map = import_csv_map(data_level['decorations'])
-        self.fg_decorations = self.create_tiles_group(decorations_map, 'decorations')
+        self.fg_decorations = self.create_tiles_group(decorations_map, 'decorations', data_level)
 
         # монеты
         coins_map = import_csv_map(data_level['coins'])
-        self.coins = self.create_tiles_group(coins_map, 'coins')
+        self.coins = self.create_tiles_group(coins_map, 'coins', data_level)
 
         # звук сбора монет
         self.coin_sound = "sound/get_coin.wav"
@@ -61,18 +62,18 @@ class Level:
 
         # режущие препятствия
         cutting_object_map = import_csv_map(data_level['obstacles'])
-        self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles')
+        self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles', data_level)
 
         # пыль от ног игрока
         self.particles_dust_sprite = pygame.sprite.GroupSingle()
 
         # невидимые ограничения для врагов
         limitations_enemy_map = import_csv_map(data_level['limitations_enemy'])
-        self.limitations_enemy = self.create_tiles_group(limitations_enemy_map, 'limitations enemy')
+        self.limitations_enemy = self.create_tiles_group(limitations_enemy_map, 'limitations enemy', data_level)
 
         # враги
         enemies_map = import_csv_map(data_level['enemies'])
-        self.enemies = self.create_tiles_group(enemies_map, 'enemy')
+        self.enemies = self.create_tiles_group(enemies_map, 'enemy', data_level)
 
         # музыка
         self.music = "sound/game_music.mp3"
@@ -86,53 +87,53 @@ class Level:
         self.damage_sound = 'sound/damage.mp3'
         all_sounds.add_sound(self.damage_sound)
 
-    def create_tiles_group(self, map, type):
+    def create_tiles_group(self, map, type, data):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
         sprite = None
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
-                    x = col_ind * tile_size
-                    y = row_ind * tile_size
+                    x = col_ind * self.tile_size
+                    y = row_ind * self.tile_size
                     if type in ('terrain', 'decorations'):
-                        surfaces = import_folder_images('graphics/tirrein')
+                        surfaces = import_folder_images(data['terrain_folder'])
                         image = surfaces[int(col)]  # берём по индификатуру из списка изображение
                         if type == 'decorations':
-                            sprite = StaticTile(tile_size, x, y, image, croped=(10, 50))
+                            sprite = StaticTile(self.tile_size, x, y, image, croped=(10, 50))
                         else:
-                            sprite = StaticTile(tile_size, x, y, image)
+                            sprite = StaticTile(self.tile_size, x, y, image)
                     elif type == 'coins':
-                        sprite = Coin(tile_size, x, y, 'graphics/coins')
+                        sprite = Coin(self.tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
-                        sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc', 0.3)
+                        sprite = CuttingObject(self.tile_size, x, y, data['obstacles_folder'], 0.3)
                     elif type == 'limitations enemy':
-                        sprite = MainTile(tile_size, x, y)
+                        sprite = MainTile(self.tile_size, x, y)
                     elif type == 'enemy':
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
-                        sprite = MainEnemy(tile_size, x, y, path)
+                        sprite = MainEnemy(self.tile_size, x, y, path)
                     if sprite is not None:
                         all_group.add(sprite)
         return all_group
 
-    def load_player(self, map):
+    def load_player(self, map, gravity):
         '''Загрузка игрока, места возрождения, цели до которой он должен добраться.'''
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
-                    x = col_ind * tile_size
-                    y = row_ind * tile_size
+                    x = col_ind * self.tile_size
+                    y = row_ind * self.tile_size
                     if col == '0':
                         sprite = Player((x, y), self.display, 'graphics/character_animate/', self.jump_dust,
-                                        permission_shoot=self.missile_scale.permission_shoot, speed=7)
+                                        permission_shoot=self.missile_scale.permission_shoot, speed=7, gravity=gravity)
                         self.player.add(sprite)
                         image = pygame.image.load('graphics/character/start.png').convert_alpha()
-                        sprite = StaticTile(tile_size, x, y, image)
+                        sprite = StaticTile(self.tile_size, x, y, image)
                         self.start.add(sprite)
                     elif col == '1':
                         image = pygame.image.load('graphics/character/end.png').convert_alpha()
-                        sprite = StaticTile(tile_size, x, y, image)
+                        sprite = StaticTile(self.tile_size, x, y, image)
                         self.purpose.add(sprite)
 
     def load_scales(self, color_text):
@@ -358,10 +359,6 @@ class Level:
         # рисование пуль
         self.player.sprite.missiles.draw(self.display)
 
-        # рисование шкалы относящихся к нему текст
-        self.missile_scale.draw(self.display)
-        self.healh_scale.draw(self.display)
-
         # местность
         self.terrain_sprites.draw(self.display)
         self.fg_decorations.draw(self.display)
@@ -399,6 +396,10 @@ class Level:
         self.collision_with_asteroids()  # столкновения всего с астероидами
         # генерация астероидов и отображение их
         self.generation_asteroids()
+
+        # рисование шкалы относящихся к нему текст
+        self.missile_scale.draw(self.display)
+        self.healh_scale.draw(self.display)
 
         # проверка(прошёл игрок уровень)
         self.win_player()
