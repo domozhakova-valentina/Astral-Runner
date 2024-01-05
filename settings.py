@@ -1,6 +1,5 @@
 vertical_tile_number = 6
-tile_size = 128
-screen_height = vertical_tile_number * tile_size
+screen_height = vertical_tile_number * 128
 screen_width = 1200
 
 button_color = (0, 150, 0) # цвет кнопки меню

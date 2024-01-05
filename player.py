@@ -10,7 +10,7 @@ class Player(pygame.sprite.Sprite):
     PATH_FOLDER_MISSILES = 'graphics/character/shot'
     HEALTH = 120
 
-    def __init__(self, position, screen, character_path, dust_jump, permission_shoot, speed=5):
+    def __init__(self, position, screen, character_path, dust_jump, permission_shoot, speed=5, gravity=0.6):
         super().__init__()
         self.import_character_animations(character_path)
 
@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.CONST_SPEED = speed
         self.speed = speed
-        self.gravity = 0.6
+        self.gravity = gravity
         self.jump_coef = -16
         self.rect = self.image.get_rect(topleft=position)  # установка на позицию
         self.face_right = True
