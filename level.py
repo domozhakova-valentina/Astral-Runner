@@ -21,7 +21,7 @@ class Level:
 
     def __init__(self, data_level, screen):
         # Шрифт
-        font = pygame.font.SysFont(None, RechargeScale.SIZE_FONT)
+        font = pygame.font.SysFont(None, 40)
         # Создание текста
         self.text = font.render('Убейте всех монстров и доберитесь до блока end!!!', True,
                                 data_level['color_text_scale'])
@@ -114,7 +114,10 @@ class Level:
                     elif type == 'enemy':
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
-                        sprite = MainEnemy(self.tile_size, x, y, path)
+                        if col == '0':
+                            sprite = MainEnemy(self.tile_size, x, y, path)
+                        elif col == '1':
+                            sprite = MainEnemy(self.tile_size, x, y, path, health=30, direction=1)
                     if sprite is not None:
                         all_group.add(sprite)
         return all_group
@@ -343,7 +346,7 @@ class Level:
         '''Текст приветствие.'''
         if self.counter_coins == 0:
             # Отображение текста
-            text_rect = self.text.get_rect(center=(screen_width // 2, screen_height // 5))
+            text_rect = self.text.get_rect(center=(screen_width // 2, screen_height // 7))
             self.display.blit(self.text, text_rect)
 
     def run(self, screen, event):
