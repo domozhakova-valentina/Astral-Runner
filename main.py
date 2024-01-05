@@ -7,7 +7,7 @@ from game_over import Game_over, buttons
 from options import Options, options_items
 
 pygame.init()
-pygame.mixer.set_num_channels(100)  # устанавливаем больше звуковых каналов
+pygame.mixer.set_num_channels(1000)  # устанавливаем больше звуковых каналов
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
@@ -15,7 +15,7 @@ scene = menu = Menu(items)
 menu.start_music()
 game_over = Game_over(buttons)
 options = Options(options_items)
-level = Level(level_0, screen)  # создание уровня
+level = Level(level_1, screen)  # создание уровня
 clock = pygame.time.Clock()
 
 while True:
