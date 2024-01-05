@@ -29,6 +29,6 @@ level_1 = {'terrain': 'levels/1/1_level_tiles.csv',
 		'color_text_scale': (100, 100, 80),
 		'damage player': 5,
 		'gravity_player': 0.8,
-		'asteroid_generation_coefficient': 3,
+		'asteroid_generation_coefficient': 10,
 		'tile size': 64,
 		}

@@ -235,11 +235,15 @@ class Level:
         '''Столкновения снаряда с монстрами и препятствиями.'''
         enemy = self.enemies.sprites()
         limitations = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        group_limitations = pygame.sprite.Group()
+        group_limitations.add(limitations)
         missiles = self.player.sprite.missiles
 
-        for sprite in limitations:  # переборка объектов карты
-            for missile in missiles:
-                if pygame.sprite.collide_mask(missile, sprite):
+        collisions = pygame.sprite.groupcollide(missiles, group_limitations, False, False)  # столкновение групп спрайтов снарядов и объектов карты
+
+        for missile, limitations in collisions.items():
+            for limitation in limitations:
+                if pygame.sprite.collide_mask(missile, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     self.generate_explosion(missile)
                     missile.kill()
         for sprite in enemy:  # переборка врагов
@@ -263,12 +267,21 @@ class Level:
 
     def player_kill(self):
         player = self.player.sprite
-        sprites = self.enemies.sprites() + self.obstacles.sprites()  # спрайты от которых игрок, может, получит урон
+        sprites = self.enemies.sprites() + self.obstacles.sprites() + self.asteroids.sprites()  # спрайты от которых игрок, может, получит урон
         for sprite in sprites:
             if pygame.sprite.collide_mask(player, sprite):
                 all_sounds.play_sound(self.damage_sound)
-                if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
-                                                  else 1):  # изменяется шкала здоровья
+                if sprite in self.asteroids.sprites():  # от астероидов
+                    damage = 100
+                    x, y = sprite.rect.topleft
+                    sprite.kill()
+                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(explosion_sprite)
+                elif sprite in self.enemies.sprites():
+                    damage = 2
+                else:
+                    damage = 1
+                if self.healh_scale.change_health(damage):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
                     player.kill()
                     sys.exit()
@@ -278,7 +291,7 @@ class Level:
         size_font = 32
         for coin in self.coins:
             if pygame.sprite.collide_mask(coin, sprite):
-                all_sounds.play_sound(self.coin_sound) # звук сбора монет
+                all_sounds.play_sound(self.coin_sound)  # звук сбора монет
                 coin.kill()
                 self.counter_coins += 1
         self.display.blit(self.coin_image, (screen_width - self.coin_image.get_width(), 0))
@@ -312,22 +325,17 @@ class Level:
 
     def collision_with_asteroids(self):
         limitations_sprites = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
-        player_sprite = self.player.sprite
-        asteroids = self.asteroids.sprites()
+        group_limitations = pygame.sprite.Group()
+        group_limitations.add(limitations_sprites)
+        collisions = pygame.sprite.groupcollide(self.asteroids, group_limitations, False, False)  # столкновение групп спрайтов астероидов и объектов карты
 
-        for sprite in asteroids:
-            if pygame.sprite.collide_mask(player_sprite, sprite):
-                # игрок умирает
-                player_sprite.kill()
-                sys.exit()
-
-        for sprite in limitations_sprites:
-            for asteroid in asteroids:
-                if pygame.sprite.collide_mask(asteroid, sprite):
-                    x, y = asteroid.rect.center
+        for asteroid, limitations in collisions.items():
+            for limitation in limitations:
+                if pygame.sprite.collide_mask(asteroid, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
+                    x, y = asteroid.rect.topleft
+                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(explosion_sprite)
                     asteroid.kill()
-                    self.explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
-                    self.explosions.add(self.explosion_sprite)
 
     def run(self, screen, event):
         '''Запуск уровня!'''
@@ -393,7 +401,7 @@ class Level:
         # обработка столкновения с монетами
         self.collision_with_coins()
 
-        self.collision_with_asteroids()  # столкновения всего с астероидами
+        self.collision_with_asteroids()  # столкновения объектов карты с астероидами
         # генерация астероидов и отображение их
         self.generation_asteroids()
 
