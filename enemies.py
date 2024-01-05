@@ -5,9 +5,10 @@ from random import randint
 
 
 class MainEnemy(AnimatedDecor):
-    def __init__(self, size, x, y, path, health=20):
+    def __init__(self, size, x, y, path, health=20, direction=-1):
+        self.direction = direction  # связывает, в какую сторону смотрит монстр
         super().__init__(size, x, y, path + '/run')
-        self.speed = -randint(3, 6)
+        self.speed = randint(3, 6) * self.direction
         self.health = health
         x, y = x + size // 2, y + size
         self.rect = self.image.get_rect(midbottom=(x, y))
@@ -23,7 +24,9 @@ class MainEnemy(AnimatedDecor):
         self.rect.x += self.speed
 
     def turn_image(self):
-        if self.speed > 0:
+        if self.direction < 0 and self.speed > 0:
+            self.image = pygame.transform.flip(self.image, True, False)
+        elif self.direction > 0 and self.speed < 0:
             self.image = pygame.transform.flip(self.image, True, False)
 
     def coordinate_scale(self):
