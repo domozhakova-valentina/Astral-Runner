@@ -20,6 +20,11 @@ class Level:
     PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
+        # Шрифт
+        font = pygame.font.SysFont(None, RechargeScale.SIZE_FONT)
+        # Создание текста
+        self.text = font.render('Убейте всех монстров и доберитесь до блока end!!!', True,
+                                data_level['color_text_scale'])
         # общая настройка
         self.display = screen
         self.world_shift = pygame.math.Vector2(0,
@@ -334,6 +339,13 @@ class Level:
                     self.explosions.add(explosion_sprite)
                     asteroid.kill()
 
+    def initial_text(self):
+        '''Текст приветствие.'''
+        if self.counter_coins == 0:
+            # Отображение текста
+            text_rect = self.text.get_rect(center=(screen_width // 2, screen_height // 5))
+            self.display.blit(self.text, text_rect)
+
     def run(self, screen, event):
         '''Запуск уровня!'''
         # рисование фона
@@ -408,6 +420,9 @@ class Level:
 
         # проверка(прошёл игрок уровень)
         self.win_player()
+
+        # отображение текста
+        self.initial_text()
 
     def update(self, event):
         pass
