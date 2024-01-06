@@ -122,7 +122,7 @@ class Level:
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
                         if col == '0':
                             sprite = MainEnemy(self.tile_size, x, y, path)
-                        elif col == '1':
+                        elif col in ('1', '2'):
                             sprite = MainEnemy(self.tile_size, x, y, path, health=30, direction=1)
                     if sprite is not None:
                         all_group.add(sprite)
