@@ -59,3 +59,24 @@ level_2 = {
 		'damage_asteroid': 20,
 		'tile size': 64
 }
+
+level_3 = {
+		'terrain': 'levels/3/3_level_tiles.csv',
+		'terrain_folder': 'graphics/tirrein3',
+		'coins': 'levels/3/3_level_coins.csv',
+		'player': 'levels/3/3_level_game.csv',
+        'decorations': 'levels/empty folder.csv',
+		'obstacles': 'levels/3/3_level_obstacles.csv',
+		'obstacles_folder': 'graphics/obstacles/thorns',
+		'limitations_enemy': 'levels/empty folder.csv',
+		'enemies': 'levels/empty folder.csv',
+	    'background': 'graphics/background/level_3_swamp_planet.png',
+		'color_text_scale': (100, 100, 80),
+		'damage player':  5,
+		'gravity_player': 0.92,
+		'asteroid_generation_coefficient': 0,
+		'PATH_ASTEROID': 'graphics/animate_asteroid/',
+		'PATH_EXR_ASTEROID': 'graphics/explosions/2',
+		'damage_asteroid': 100,
+		'tile size': 64
+}

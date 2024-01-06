@@ -109,7 +109,12 @@ class Level:
                     elif type == 'coins':
                         sprite = Coin(self.tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
-                        sprite = CuttingObject(self.tile_size, x, y, data['obstacles_folder'], 0.3)
+                        folder = data['obstacles_folder']
+                        if folder.split('/')[-1] == 'thorns':
+                            speed_animate = 0.05
+                        else:
+                            speed_animate = 0.3
+                        sprite = CuttingObject(self.tile_size, x, y, folder, speed_animate)
                     elif type == 'limitations enemy':
                         sprite = MainTile(self.tile_size, x, y)
                     elif type == 'enemy':
