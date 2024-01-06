@@ -16,8 +16,6 @@ from asteroids import Asteroid
 
 class Level:
     PATH_EXP = 'graphics/explosions/1'
-    PATH_ASTEROID = 'graphics/animate_asteroid/'
-    PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
         # Шрифт
@@ -36,6 +34,9 @@ class Level:
         self.counter_coins = 0
         self.coin_image = pygame.image.load('graphics/coins/0.png')
         self.k_generation_asteroid = data_level['asteroid_generation_coefficient']
+        self.PATH_ASTEROID = data_level['PATH_ASTEROID']
+        self.PATH_EXR_ASTEROID = data_level['PATH_EXR_ASTEROID']
+        self.damage_asteroid = data_level['damage_asteroid']
         self.asteroids = pygame.sprite.Group()
 
         # спрайты взрывов
@@ -277,10 +278,10 @@ class Level:
             if pygame.sprite.collide_mask(player, sprite):
                 all_sounds.play_sound(self.damage_sound)
                 if sprite in self.asteroids.sprites():  # от астероидов
-                    damage = 100
+                    damage = self.damage_asteroid
                     x, y = sprite.rect.topleft
                     sprite.kill()
-                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
                 elif sprite in self.enemies.sprites():
                     damage = 2
@@ -323,7 +324,7 @@ class Level:
         for n in range(self.k_generation_asteroid):
             r = randrange(10001)
             if r == 10:
-                asteroid = Asteroid(128, Level.PATH_ASTEROID, k_animate=0.1)
+                asteroid = Asteroid(128, self.PATH_ASTEROID, k_animate=0.1)
                 self.asteroids.add(asteroid)
         self.asteroids.update(self.world_shift)
         self.asteroids.draw(self.display)
@@ -338,7 +339,7 @@ class Level:
             for limitation in limitations:
                 if pygame.sprite.collide_mask(asteroid, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     x, y = asteroid.rect.topleft
-                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
                     asteroid.kill()
 

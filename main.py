@@ -1,6 +1,6 @@
 import pygame, sys
 from settings import *
-from data_level import level_0, level_1
+from data_level import level_0, level_1, level_2
 from level import Level
 from menu import Menu, items
 from game_over import Game_over, buttons
@@ -22,7 +22,7 @@ scene = menu = Menu(items)
 menu.start_music()
 game_over = Game_over(buttons)
 options = Options(options_items)
-level = Level(level_1, screen)  # создание уровня
+level = Level(level_2, screen)  # создание уровня
 clock = pygame.time.Clock()
 
 while True:

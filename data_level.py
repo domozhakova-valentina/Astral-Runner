@@ -13,6 +13,9 @@ level_0 = {
 		'damage player':  5,
 		'gravity_player': 0.6,
 		'asteroid_generation_coefficient': 0,
+		'PATH_ASTEROID': 'graphics/animate_asteroid/',
+		'PATH_EXR_ASTEROID': 'graphics/explosions/2',
+		'damage_asteroid': 100,
 		'tile size': 128
 }
 
@@ -22,7 +25,7 @@ level_1 = {'terrain': 'levels/1/1_level_tiles.csv',
 		'player': 'levels/1/1_level_game.csv',
 		'decorations': 'levels/empty folder.csv',
 		'obstacles': 'levels/1/1_level_lava.csv',
-		'obstacles_folder': 'graphics/obstacles/lava',
+		'obstacles_folder': 'graphics/obstacles/lava_draw',
 		'limitations_enemy': 'levels/1/1_level_limitations_monsters.csv',
 		'enemies': 'levels/1/1_level_monsters.csv',
 		'background': 'graphics/background/level_1_fare_planet.png ',
@@ -30,5 +33,29 @@ level_1 = {'terrain': 'levels/1/1_level_tiles.csv',
 		'damage player': 5,
 		'gravity_player': 0.8,
 		'asteroid_generation_coefficient': 12,
+		'PATH_ASTEROID': 'graphics/animate_asteroid/',
+		'PATH_EXR_ASTEROID': 'graphics/explosions/2',
+		'damage_asteroid': 100,
 		'tile size': 64,
 		}
+
+level_2 = {
+		'terrain': 'levels/2/2_level_tiles.csv',
+		'terrain_folder': 'graphics/tirrein2',
+		'coins': 'levels/2/2_level_coins.csv',
+		'player': 'levels/2/2_level_game.csv',
+        'decorations': 'levels/empty folder.csv',
+		'obstacles': 'levels/2/2_level_obstacles.csv',
+		'obstacles_folder': 'graphics/obstacles/cutting_disc',
+		'limitations_enemy': 'levels/empty folder.csv',
+		'enemies': 'levels/empty folder.csv',
+	    'background': 'graphics/background/level_2_frozen_planet.png',
+		'color_text_scale': (100, 80, 180),
+		'damage player':  5,
+		'gravity_player': 0.85,
+		'asteroid_generation_coefficient': 100,
+		'PATH_ASTEROID': 'graphics/snowball/',
+		'PATH_EXR_ASTEROID': 'graphics/explosions/3',
+		'damage_asteroid': 20,
+		'tile size': 64
+}
