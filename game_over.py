@@ -1,4 +1,5 @@
 from buttons_functions import *
+from menu import Menu
 from settings import *
 
 buttons = [
@@ -12,24 +13,10 @@ buttons = [
 ]
 
 
-class Game_over:
-    def __init__(self, buttons):
-        self.buttons = buttons
+class Game_over(Menu):
+    def __init__(self, items):
+        super().__init__(items=buttons)
+        self.items = buttons
         self.size = (screen_width, screen_height)
         self.fon = pygame.image.load('game_over/fon1.jpg')
         self.fon = pygame.transform.scale(self.fon, self.size)
-
-    def run(self, event, screen):
-        # код для рисования на экране
-        screen.blit(self.fon, (0, 0))
-        for button in self.buttons:
-            button.draw(screen)
-
-    def update(self, event):
-        # проверка на клик по кнопке. Возвращает либо функцию, соответсвующую кнопке, либо None
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in self.buttons:
-                action = button.update(event.pos)
-                if action is not None:
-                    return action
-        return None

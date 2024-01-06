@@ -14,13 +14,15 @@ pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
 scene = menu = Menu(items)
 menu.start_music()
-game_over = Game_over(buttons)
+game_over = Game_over(items)
 options = Options(options_items)
 level = Level(level_0, screen)  # создание уровня
 clock = pygame.time.Clock()
-
 while True:
     screen.fill('grey')
+    if level.end_flag:
+        scene = game_over
+        level.end_flag = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -30,6 +32,7 @@ while True:
             game_state = change()
             scene.stop_music()
             if game_state == 'running_game':
+                level = Level(level_0, screen)
                 scene = level
             if game_state == 'running_menu':
                 scene = menu
@@ -37,8 +40,6 @@ while True:
                 scene = options
             if game_state == 'running_rules':
                 pass
-            if game_state == 'game_over':
-                scene = game_over
             scene.start_music()
     scene.run(event, screen)
     pygame.display.flip()

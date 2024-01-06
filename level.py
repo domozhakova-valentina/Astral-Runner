@@ -71,6 +71,9 @@ class Level:
         self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
         self.channel = pygame.mixer.Channel(1)
 
+        # флаг, указывающий на окончание уровня
+        self.end_flag = False
+
     def create_tiles_group(self, map, type):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
@@ -250,8 +253,7 @@ class Level:
                 if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
                                                   else 1):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
-                    player.kill()
-                    sys.exit()
+                    self.end_flag = True
 
     def collision_with_coins(self):
         sprite = self.player.sprite
@@ -270,6 +272,10 @@ class Level:
                                            len(str(self.counter_coins)) *
                                            size_font // 2 - self.coin_image.get_width(), 6))
         self.display.blit(text, text_rect)
+
+    def check_falling(self):
+        if self.player.sprite.falling_check():
+            self.end_flag = True
 
     def run(self, screen, event):
         '''Запуск уровня!'''
@@ -338,6 +344,9 @@ class Level:
 
         # обработка столкновения с монетами
         self.collision_with_coins()
+
+        # проверка падения в бездну
+        self.check_falling()
 
     def update(self, event):
         pass

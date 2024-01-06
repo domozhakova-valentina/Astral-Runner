@@ -125,8 +125,12 @@ class Player(pygame.sprite.Sprite):
         self.direction.y += self.gravity
         self.rect.y += self.direction.y
 
+    def falling_check(self):
+        return self.direction.y >= 30
+
     def update(self):
         self.user_input()
         self.animation()
         self.tracking_action()
         self.animate_run_dust()
+
