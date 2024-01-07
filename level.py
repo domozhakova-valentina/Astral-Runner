@@ -1,7 +1,8 @@
 import sys
+from random import randrange
 
 import pygame
-from settings import tile_size, screen_width, screen_height
+from settings import screen_width, screen_height
 from load import import_csv_map, import_folder_images, import_folder_folder
 from maps_odject import StaticTile, CuttingObject, Coin, MainTile
 from player import Player
@@ -9,21 +10,33 @@ from dust_particle import Particle
 from enemies import MainEnemy
 from scales import RechargeScale, HealthBar
 from explosions import Explosion
+from sounds import all_sounds, background_music
+from asteroids import Asteroid
 
 
 class Level:
     PATH_EXP = 'graphics/explosions/1'
+    PATH_ASTEROID = 'graphics/animate_asteroid/'
+    PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
+        # Шрифт
+        font = pygame.font.SysFont(None, 40)
+        # Создание текста
+        self.text = font.render('Убейте всех монстров и доберитесь до блока end!!!', True,
+                                data_level['color_text_scale'])
         # общая настройка
         self.display = screen
         self.world_shift = pygame.math.Vector2(0,
                                                0)  # сдвиг мира он нужен для того чтобы прокручевать карту(все объекты её)
+        self.tile_size = data_level['tile size']
         self.load_scales(data_level['color_text_scale'])  # инициализируются и создаются различные шкалы игрока
         self.background_image = pygame.image.load(data_level['background'])
         self.damage_player = data_level['damage player']
         self.counter_coins = 0
         self.coin_image = pygame.image.load('graphics/coins/0.png')
+        self.k_generation_asteroid = data_level['asteroid_generation_coefficient']
+        self.asteroids = pygame.sprite.Group()
 
         # спрайты взрывов
         self.explosions = pygame.sprite.Group()
@@ -34,91 +47,98 @@ class Level:
         self.purpose = pygame.sprite.GroupSingle()
         self.start = pygame.sprite.GroupSingle()
         self.x = None
-        self.load_player(player_map)
+        self.load_player(player_map, data_level['gravity_player'])
 
         # настройка рельефа местности(плиток)
         terrain_map = import_csv_map(data_level['terrain'])
-        self.terrain_sprites = self.create_tiles_group(terrain_map, 'terrain')
+        self.terrain_sprites = self.create_tiles_group(terrain_map, 'terrain', data_level)
 
         # различные декорации которые выступают как препятствия
         decorations_map = import_csv_map(data_level['decorations'])
-        self.fg_decorations = self.create_tiles_group(decorations_map, 'decorations')
+        self.fg_decorations = self.create_tiles_group(decorations_map, 'decorations', data_level)
 
         # монеты
         coins_map = import_csv_map(data_level['coins'])
-        self.coins = self.create_tiles_group(coins_map, 'coins')
+        self.coins = self.create_tiles_group(coins_map, 'coins', data_level)
+
+        # звук сбора монет
+        self.coin_sound = "sound/get_coin.wav"
+        all_sounds.add_sound(self.coin_sound)
 
         # режущие препятствия
         cutting_object_map = import_csv_map(data_level['obstacles'])
-        self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles')
+        self.obstacles = self.create_tiles_group(cutting_object_map, 'obstacles', data_level)
 
         # пыль от ног игрока
         self.particles_dust_sprite = pygame.sprite.GroupSingle()
 
         # невидимые ограничения для врагов
         limitations_enemy_map = import_csv_map(data_level['limitations_enemy'])
-        self.limitations_enemy = self.create_tiles_group(limitations_enemy_map, 'limitations enemy')
+        self.limitations_enemy = self.create_tiles_group(limitations_enemy_map, 'limitations enemy', data_level)
 
         # враги
         enemies_map = import_csv_map(data_level['enemies'])
-        self.enemies = self.create_tiles_group(enemies_map, 'enemy')
+        self.enemies = self.create_tiles_group(enemies_map, 'enemy', data_level)
 
         # музыка
-        self.music = pygame.mixer.Sound("sound/game_music.mp3")
-        self.channel = pygame.mixer.Channel(0)
+        self.music = "sound/game_music.mp3"
 
         # звук приземления
-        self.land_sound = pygame.mixer.Sound("sound/jump.ogg")
-        self.channel = pygame.mixer.Channel(1)
+        self.land_sound = 'sound/jump.ogg'
 
-        # флаг, указывающий на окончание уровня
-        self.end_flag = False
+        # звук повреждения игрока
+        self.damage_sound = 'sound/damage.mp3'
 
-    def create_tiles_group(self, map, type):
+    def create_tiles_group(self, map, type, data):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
+        sprite = None
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
-                    x = col_ind * tile_size
-                    y = row_ind * tile_size
+                    x = col_ind * self.tile_size
+                    y = row_ind * self.tile_size
                     if type in ('terrain', 'decorations'):
-                        surfaces = import_folder_images('graphics/tirrein')
+                        surfaces = import_folder_images(data['terrain_folder'])
                         image = surfaces[int(col)]  # берём по индификатуру из списка изображение
                         if type == 'decorations':
-                            sprite = StaticTile(tile_size, x, y, image, croped=(10, 50))
+                            sprite = StaticTile(self.tile_size, x, y, image, croped=(10, 50))
                         else:
-                            sprite = StaticTile(tile_size, x, y, image)
+                            sprite = StaticTile(self.tile_size, x, y, image)
                     elif type == 'coins':
-                        sprite = Coin(tile_size, x, y, 'graphics/coins')
+                        sprite = Coin(self.tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
-                        sprite = CuttingObject(tile_size, x, y, 'graphics/obstacles/cutting_disc', 0.3)
+                        sprite = CuttingObject(self.tile_size, x, y, data['obstacles_folder'], 0.3)
                     elif type == 'limitations enemy':
-                        sprite = MainTile(tile_size, x, y)
+                        sprite = MainTile(self.tile_size, x, y)
                     elif type == 'enemy':
                         folder = import_folder_folder('graphics/enemies')
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
-                        sprite = MainEnemy(tile_size, x, y, path)
-                    all_group.add(sprite)
+                        if col == '0':
+                            sprite = MainEnemy(self.tile_size, x, y, path)
+                        elif col == '1':
+                            sprite = MainEnemy(self.tile_size, x, y, path, health=30, direction=1)
+                    if sprite is not None:
+                        all_group.add(sprite)
         return all_group
 
-    def load_player(self, map):
+    def load_player(self, map, gravity):
         '''Загрузка игрока, места возрождения, цели до которой он должен добраться.'''
         for row_ind, row in enumerate(map):
             for col_ind, col in enumerate(row):
                 if col != '-1':
-                    x = col_ind * tile_size
-                    y = row_ind * tile_size
+                    x = col_ind * self.tile_size
+                    y = row_ind * self.tile_size
                     if col == '0':
                         sprite = Player((x, y), self.display, 'graphics/character_animate/', self.jump_dust,
-                                        permission_shoot=self.missile_scale.permission_shoot, speed=7)
+                                        permission_shoot=self.missile_scale.permission_shoot, speed=7, gravity=gravity)
                         self.player.add(sprite)
                         image = pygame.image.load('graphics/character/start.png').convert_alpha()
-                        sprite = StaticTile(tile_size, x, y, image)
+                        sprite = StaticTile(self.tile_size, x, y, image)
                         self.start.add(sprite)
                     elif col == '1':
                         image = pygame.image.load('graphics/character/end.png').convert_alpha()
-                        sprite = StaticTile(tile_size, x, y, image)
+                        sprite = StaticTile(self.tile_size, x, y, image)
                         self.purpose.add(sprite)
 
     def load_scales(self, color_text):
@@ -143,7 +163,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
-            self.land_sound.play()  # звук падения
+            all_sounds.play_sound(self.land_sound) # звук падения
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -212,18 +232,23 @@ class Level:
     def enemy_reverse(self):
         '''Определяет столкновение с ограничениями и разворачивает врага.'''
         for enemy in self.enemies.sprites():
-            if pygame.sprite.spritecollide(enemy, self.limitations_enemy, False):
+            sprite_collision = pygame.sprite.spritecollide(enemy, self.limitations_enemy, False)
+            if sprite_collision:
                 enemy.turn()
 
     def collision_missile_player(self):
         '''Столкновения снаряда с монстрами и препятствиями.'''
         enemy = self.enemies.sprites()
         limitations = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        group_limitations = pygame.sprite.Group()
+        group_limitations.add(limitations)
         missiles = self.player.sprite.missiles
 
-        for sprite in limitations:  # переборка объектов карты
-            for missile in missiles:
-                if pygame.sprite.collide_mask(missile, sprite):
+        collisions = pygame.sprite.groupcollide(missiles, group_limitations, False, False)  # столкновение групп спрайтов снарядов и объектов карты
+
+        for missile, limitations in collisions.items():
+            for limitation in limitations:
+                if pygame.sprite.collide_mask(missile, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     self.generate_explosion(missile)
                     missile.kill()
         for sprite in enemy:  # переборка врагов
@@ -247,19 +272,31 @@ class Level:
 
     def player_kill(self):
         player = self.player.sprite
-        sprites = self.enemies.sprites() + self.obstacles.sprites()  # спрайты от которых игрок, может, получит урон
+        sprites = self.enemies.sprites() + self.obstacles.sprites() + self.asteroids.sprites()  # спрайты от которых игрок, может, получит урон
         for sprite in sprites:
             if pygame.sprite.collide_mask(player, sprite):
-                if self.healh_scale.change_health(2 if sprite in self.enemies.sprites()
-                                                  else 1):  # изменяется шкала здоровья
+                all_sounds.play_sound(self.damage_sound)
+                if sprite in self.asteroids.sprites():  # от астероидов
+                    damage = 100
+                    x, y = sprite.rect.topleft
+                    sprite.kill()
+                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(explosion_sprite)
+                elif sprite in self.enemies.sprites():
+                    damage = 2
+                else:
+                    damage = 1
+                if self.healh_scale.change_health(damage):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
-                    self.end_flag = True
+                    player.kill()
+                    sys.exit()
 
     def collision_with_coins(self):
         sprite = self.player.sprite
         size_font = 32
         for coin in self.coins:
             if pygame.sprite.collide_mask(coin, sprite):
+                all_sounds.play_sound(self.coin_sound)  # звук сбора монет
                 coin.kill()
                 self.counter_coins += 1
         self.display.blit(self.coin_image, (screen_width - self.coin_image.get_width(), 0))
@@ -273,9 +310,44 @@ class Level:
                                            size_font // 2 - self.coin_image.get_width(), 6))
         self.display.blit(text, text_rect)
 
-    def check_falling(self):
-        if self.player.sprite.falling_check():
-            self.end_flag = True
+    def win_player(self):
+        '''Проверяет выиграл ли прошёл ли игрок уровень.'''
+        player = self.player.sprite
+        end = self.purpose.sprite
+        if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
+            print('Win')
+            sys.exit()
+
+    def generation_asteroids(self):
+        '''Генерируются рандомно астероиды в соответствие с коэффициентом.'''
+        for n in range(self.k_generation_asteroid):
+            r = randrange(10001)
+            if r == 10:
+                asteroid = Asteroid(128, Level.PATH_ASTEROID, k_animate=0.1)
+                self.asteroids.add(asteroid)
+        self.asteroids.update(self.world_shift)
+        self.asteroids.draw(self.display)
+
+    def collision_with_asteroids(self):
+        limitations_sprites = self.terrain_sprites.sprites() + self.fg_decorations.sprites() + self.obstacles.sprites()
+        group_limitations = pygame.sprite.Group()
+        group_limitations.add(limitations_sprites)
+        collisions = pygame.sprite.groupcollide(self.asteroids, group_limitations, False, False)  # столкновение групп спрайтов астероидов и объектов карты
+
+        for asteroid, limitations in collisions.items():
+            for limitation in limitations:
+                if pygame.sprite.collide_mask(asteroid, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
+                    x, y = asteroid.rect.topleft
+                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    self.explosions.add(explosion_sprite)
+                    asteroid.kill()
+
+    def initial_text(self):
+        '''Текст приветствие.'''
+        if self.counter_coins == 0:
+            # Отображение текста
+            text_rect = self.text.get_rect(center=(screen_width // 2, screen_height // 7))
+            self.display.blit(self.text, text_rect)
 
     def run(self, screen, event):
         '''Запуск уровня!'''
@@ -292,8 +364,8 @@ class Level:
         self.terrain_sprites.update(self.world_shift)
         self.fg_decorations.update(self.world_shift)
         self.limitations_enemy.update(self.world_shift)
-        self.enemy_reverse()
         self.enemies.update(self.world_shift)
+        self.enemy_reverse()
         self.coins.update(self.world_shift)
         self.start.update(self.world_shift)
         self.purpose.update(self.world_shift)
@@ -306,10 +378,6 @@ class Level:
 
         # рисование пуль
         self.player.sprite.missiles.draw(self.display)
-
-        # рисование шкалы относящихся к нему текст
-        self.missile_scale.draw(self.display)
-        self.healh_scale.draw(self.display)
 
         # местность
         self.terrain_sprites.draw(self.display)
@@ -345,14 +413,25 @@ class Level:
         # обработка столкновения с монетами
         self.collision_with_coins()
 
-        # проверка падения в бездну
-        self.check_falling()
+        self.collision_with_asteroids()  # столкновения объектов карты с астероидами
+        # генерация астероидов и отображение их
+        self.generation_asteroids()
+
+        # рисование шкалы относящихся к нему текст
+        self.missile_scale.draw(self.display)
+        self.healh_scale.draw(self.display)
+
+        # проверка(прошёл игрок уровень)
+        self.win_player()
+
+        # отображение текста
+        self.initial_text()
 
     def update(self, event):
         pass
 
     def start_music(self):
-        self.channel.play(self.music, loops=-1, fade_ms=5000)
+        background_music.play_music(self.music)
 
     def stop_music(self):
-        self.channel.stop()
+        background_music.stop_music(self.music)

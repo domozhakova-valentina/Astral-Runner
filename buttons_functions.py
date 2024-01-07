@@ -1,4 +1,5 @@
 import pygame
+from sounds import all_sounds, background_music
 
 
 class Button:
@@ -48,12 +49,14 @@ def menu_action():
     return 'running_menu'
 
 
-def active_sound():
-    pass
+def active_sound(num):
+    all_sounds.change_sounds_volume(num)
 
 
-def active_music():
-    pass
+def active_music(num):
+    num = 1 - num
+    background_music.change_music_volume(num)
 
-def change_music_loud():
-    pass
+
+def change_music_loud(num):
+    background_music.change_music_volume(num)

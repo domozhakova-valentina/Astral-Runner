@@ -1,5 +1,6 @@
 import pygame
 from load import import_folder_images
+from sounds import all_sounds
 
 
 class Missile(pygame.sprite.Sprite):
@@ -13,6 +14,9 @@ class Missile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.get_position())
         self.max_counter = max_c
         self.counter = 0
+
+        # звук выстрела
+        self.shot_sound = "sound/shot.wav"
 
     def get_position(self):
         '''Координаты с учётом всех смещений.'''
@@ -32,12 +36,16 @@ class Missile(pygame.sprite.Sprite):
             self.rect.x += self.speed + shift[0]
             self.rect.y += shift[1]
         else:
-            # эта анимация вспышки из ствола оружия
+            # это анимация вспышки из ствола оружия
             self.index += 0.2
             self.image = self.cadres[int(self.index)]
             self.rect.center = self.get_position()
 
     def update(self, shift):
+        # звук стрельбы
+        if self.counter == 0:
+            all_sounds.play_sound(self.shot_sound)
+
         # нужно, чтобы ограничить дальность стрельбы
         if self.counter < self.max_counter:
             self.counter += 1
