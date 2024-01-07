@@ -68,15 +68,16 @@ level_3 = {
         'decorations': 'levels/empty folder.csv',
 		'obstacles': 'levels/3/3_level_obstacles.csv',
 		'obstacles_folder': 'graphics/obstacles/thorns',
-		'limitations_enemy': 'levels/empty folder.csv',
-		'enemies': 'levels/empty folder.csv',
+		'limitations_enemy': 'levels/3/3_level_limitations_monsters.csv',
+		'enemies': 'levels/3/3_level_monsters.csv',
 	    'background': 'graphics/background/level_3_swamp_planet.png',
-		'color_text_scale': (100, 100, 80),
+		'color_text_scale': (250, 255, 250),
 		'damage player':  5,
 		'gravity_player': 0.92,
 		'asteroid_generation_coefficient': 0,
 		'PATH_ASTEROID': 'graphics/animate_asteroid/',
 		'PATH_EXR_ASTEROID': 'graphics/explosions/2',
 		'damage_asteroid': 100,
-		'tile size': 64
+		'tile size': 64,
+		'color_rising_substance': (105, 131, 57)
 }

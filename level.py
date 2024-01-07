@@ -12,6 +12,7 @@ from scales import RechargeScale, HealthBar
 from explosions import Explosion
 from sounds import all_sounds, background_music
 from asteroids import Asteroid
+from rising_matter import RisingSubstance
 
 
 class Level:
@@ -80,6 +81,12 @@ class Level:
         # враги
         enemies_map = import_csv_map(data_level['enemies'])
         self.enemies = self.create_tiles_group(enemies_map, 'enemy', data_level)
+
+        # создание поднимающегося вещества, если оно предусмотрено
+        self.substance = pygame.sprite.GroupSingle()
+        if 'color_rising_substance' in data_level.keys():
+            sprite = RisingSubstance(data_level['color_rising_substance'], speed=0.3)
+            self.substance.add(sprite)
 
         # музыка
         self.music = "sound/game_music.mp3"
@@ -297,6 +304,21 @@ class Level:
                     player.kill()
                     sys.exit()
 
+        if self.substance.sprite:
+            # столкновение с веществом
+            if pygame.sprite.collide_mask(player, self.substance.sprite):
+                player.gravity += 0.02
+                if  self.healh_scale.change_health(1):  # изменяется шкала здоровья
+                    # если здоровье закончилось, то игрок умирает
+                    player.kill()
+                    sys.exit()
+            else:
+                player.gravity = player.CONST_GRAVITY
+            # если весь экран в веществе
+            if self.substance.sprite.rect.y <= 0:
+                player.kill()
+                sys.exit()
+
     def collision_with_coins(self):
         sprite = self.player.sprite
         size_font = 32
@@ -381,6 +403,7 @@ class Level:
         self.explosions.update(self.world_shift)
         self.player.sprite.missiles.update(self.world_shift)
         self.missile_scale.update()
+        self.substance.update(self.world_shift[1])
 
         # рисование пуль
         self.player.sprite.missiles.draw(self.display)
@@ -416,12 +439,15 @@ class Level:
         # рисование взрыва
         self.explosions.draw(self.display)
 
-        # обработка столкновения с монетами
-        self.collision_with_coins()
-
         self.collision_with_asteroids()  # столкновения объектов карты с астероидами
         # генерация астероидов и отображение их
         self.generation_asteroids()
+
+        # отображение поднимающегося вещества
+        self.substance.draw(self.display)
+
+        # обработка столкновения с монетами
+        self.collision_with_coins()
 
         # рисование шкалы относящихся к нему текст
         self.missile_scale.draw(self.display)

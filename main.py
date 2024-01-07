@@ -22,7 +22,7 @@ scene = menu = Menu(items)
 menu.start_music()
 game_over = Game_over(buttons)
 options = Options(options_items)
-level = Level(level_2, screen)  # создание уровня
+level = Level(level_3, screen)  # создание уровня
 clock = pygame.time.Clock()
 
 while True:

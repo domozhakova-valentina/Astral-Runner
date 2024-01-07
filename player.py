@@ -24,6 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2(0, 0)
         self.CONST_SPEED = speed
         self.speed = speed
+        self.CONST_GRAVITY = gravity
         self.gravity = gravity
         self.jump_coef = -16
         self.rect = self.image.get_rect(topleft=position)  # установка на позицию
