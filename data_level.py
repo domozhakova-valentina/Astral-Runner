@@ -81,3 +81,24 @@ level_3 = {
 		'tile size': 64,
 		'color_rising_substance': (105, 131, 57)
 }
+
+level_4 = {
+		'terrain': 'levels/4/4_level_tiles.csv',
+		'terrain_folder': 'graphics/tirrein4',
+		'coins': 'levels/4/4_level_coins.csv',
+		'player': 'levels/4/4_level_game.csv',
+        'decorations': 'levels/empty folder.csv',
+		'obstacles': 'levels/4/4_level_obstacles.csv',
+		'obstacles_folder': 'graphics/obstacles/cutting_disc',
+		'limitations_enemy': 'levels/empty folder.csv',
+		'enemies': 'levels/empty folder.csv',
+	    'background': 'graphics/background/level_4_city_planet.png',
+		'color_text_scale': (150, 200, 200),
+		'damage player':  5,
+		'gravity_player': 0.8,
+		'asteroid_generation_coefficient': 0,
+		'PATH_ASTEROID': 'graphics/animate_asteroid/',
+		'PATH_EXR_ASTEROID': 'graphics/explosions/2',
+		'damage_asteroid': 100,
+		'tile size': 128
+}
