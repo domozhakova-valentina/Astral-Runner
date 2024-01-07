@@ -28,7 +28,6 @@ class Menu:
 
     def run(self, event, screen):
         # код для рисования меню на экране
-        # self.channel.play(self.music, loops=-1, fade_ms=5000)
         screen.blit(self.fon, (0, 0))
         for item in self.items:
             item.draw(screen)

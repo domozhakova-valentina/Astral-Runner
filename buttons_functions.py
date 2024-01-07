@@ -29,12 +29,15 @@ class Button:
             return self.action
         return None
 
+    def change_color(self, color):
+        self.color = color
+
 
 '''Ниже функции кнопок'''
 
 
 def new_game_action():
-    return 'running_game'
+    return 'running_levels_map'
 
 
 def rules_action():
@@ -60,3 +63,23 @@ def active_music(num):
 
 def change_music_loud(num):
     background_music.change_music_volume(num)
+
+
+def start_level_1():
+    return 'running_level_1'
+
+
+def start_level_2():
+    return 'running_level_2'
+
+
+def start_level_3():
+    return 'running_level_3'
+
+
+def start_level_4():
+    return 'running_level_4'
+
+
+def start_level_5():
+    return 'running_level_5'
