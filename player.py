@@ -126,7 +126,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.direction.y
 
     def falling_check(self):
-        return self.direction.y >= 30
+        return self.direction.y >= 40
 
     def update(self):
         self.user_input()
