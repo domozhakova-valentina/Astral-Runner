@@ -97,6 +97,9 @@ class Level:
         # звук повреждения игрока
         self.damage_sound = 'sound/damage.mp3'
 
+        # флаг проигрыша
+        self.end_flag = False
+
     def create_tiles_group(self, map, type, data):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
@@ -301,8 +304,7 @@ class Level:
                     damage = 1
                 if self.healh_scale.change_health(damage):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
-                    player.kill()
-                    sys.exit()
+                    self.end_flag = True
 
         if self.substance.sprite:
             # столкновение с веществом
@@ -369,6 +371,10 @@ class Level:
                     explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
                     asteroid.kill()
+
+    def check_fall(self):
+        if self.player.sprite.falling_check():
+            self.end_flag = True
 
     def initial_text(self):
         '''Текст приветствие.'''
@@ -458,6 +464,9 @@ class Level:
 
         # отображение текста
         self.initial_text()
+
+        # проверка на падение в бездну
+        self.check_fall()
 
     def update(self, event):
         pass
