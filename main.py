@@ -38,7 +38,7 @@ while True:
             game_state = change()
             scene.stop_music()
             if game_state == 'running_game':
-                level = Level(level_0, screen)
+                level = Level(level_1, screen)
                 scene = level
             if game_state == 'running_menu':
                 scene = menu
