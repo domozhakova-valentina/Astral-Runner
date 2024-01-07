@@ -34,7 +34,7 @@ class AnimatedDecor(MainTile):
 
     def animation(self):
         self.index_cadre += self.k_animate  # увеличение индекса кадра для перелистования на новый
-        if self.index_cadre > len(self.cadres) - 1:  # возвращение к началу кадров
+        if self.index_cadre >= len(self.cadres):  # возвращение к началу кадров
             self.index_cadre = 0
         self.image = self.cadres[int(self.index_cadre)]
 
@@ -48,6 +48,10 @@ class CuttingObject(AnimatedDecor):
         super().__init__(size, x, y, path, k_animate)
         x, y = x + size // 2, y + size  # переопределение координат установки изображения
         self.rect = self.image.get_rect(midbottom=(x, y))
+
+    def animation(self):
+        super().animation()
+        self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
 
 
 class Coin(AnimatedDecor):

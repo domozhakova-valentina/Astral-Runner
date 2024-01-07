@@ -12,12 +12,11 @@ from scales import RechargeScale, HealthBar
 from explosions import Explosion
 from sounds import all_sounds, background_music
 from asteroids import Asteroid
+from rising_matter import RisingSubstance
 
 
 class Level:
     PATH_EXP = 'graphics/explosions/1'
-    PATH_ASTEROID = 'graphics/animate_asteroid/'
-    PATH_EXR_ASTEROID = 'graphics/explosions/2'
 
     def __init__(self, data_level, screen):
         # Шрифт
@@ -36,6 +35,9 @@ class Level:
         self.counter_coins = 0
         self.coin_image = pygame.image.load('graphics/coins/0.png')
         self.k_generation_asteroid = data_level['asteroid_generation_coefficient']
+        self.PATH_ASTEROID = data_level['PATH_ASTEROID']
+        self.PATH_EXR_ASTEROID = data_level['PATH_EXR_ASTEROID']
+        self.damage_asteroid = data_level['damage_asteroid']
         self.asteroids = pygame.sprite.Group()
 
         # спрайты взрывов
@@ -80,6 +82,12 @@ class Level:
         enemies_map = import_csv_map(data_level['enemies'])
         self.enemies = self.create_tiles_group(enemies_map, 'enemy', data_level)
 
+        # создание поднимающегося вещества, если оно предусмотрено
+        self.substance = pygame.sprite.GroupSingle()
+        if 'color_rising_substance' in data_level.keys():
+            sprite = RisingSubstance(data_level['color_rising_substance'], speed=0.3)
+            self.substance.add(sprite)
+
         # музыка
         self.music = "sound/game_music.mp3"
 
@@ -111,7 +119,12 @@ class Level:
                     elif type == 'coins':
                         sprite = Coin(self.tile_size, x, y, 'graphics/coins')
                     elif type == 'obstacles':
-                        sprite = CuttingObject(self.tile_size, x, y, data['obstacles_folder'], 0.3)
+                        folder = data['obstacles_folder']
+                        if folder.split('/')[-1] == 'thorns':
+                            speed_animate = 0.05
+                        else:
+                            speed_animate = 0.3
+                        sprite = CuttingObject(self.tile_size, x, y, folder, speed_animate)
                     elif type == 'limitations enemy':
                         sprite = MainTile(self.tile_size, x, y)
                     elif type == 'enemy':
@@ -119,7 +132,7 @@ class Level:
                         path = folder[int(col)]  # берём по индификатуру из списка путей папок путь папки монстра
                         if col == '0':
                             sprite = MainEnemy(self.tile_size, x, y, path)
-                        elif col == '1':
+                        elif col in ('1', '2'):
                             sprite = MainEnemy(self.tile_size, x, y, path, health=30, direction=1)
                     if sprite is not None:
                         all_group.add(sprite)
@@ -280,10 +293,10 @@ class Level:
             if pygame.sprite.collide_mask(player, sprite):
                 all_sounds.play_sound(self.damage_sound)
                 if sprite in self.asteroids.sprites():  # от астероидов
-                    damage = 100
+                    damage = self.damage_asteroid
                     x, y = sprite.rect.topleft
                     sprite.kill()
-                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
                 elif sprite in self.enemies.sprites():
                     damage = 2
@@ -292,6 +305,21 @@ class Level:
                 if self.healh_scale.change_health(damage):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
                     self.end_flag = True
+
+        if self.substance.sprite:
+            # столкновение с веществом
+            if pygame.sprite.collide_mask(player, self.substance.sprite):
+                player.gravity += 0.02
+                if  self.healh_scale.change_health(1):  # изменяется шкала здоровья
+                    # если здоровье закончилось, то игрок умирает
+                    player.kill()
+                    sys.exit()
+            else:
+                player.gravity = player.CONST_GRAVITY
+            # если весь экран в веществе
+            if self.substance.sprite.rect.y <= 0:
+                player.kill()
+                sys.exit()
 
     def collision_with_coins(self):
         sprite = self.player.sprite
@@ -325,7 +353,7 @@ class Level:
         for n in range(self.k_generation_asteroid):
             r = randrange(10001)
             if r == 10:
-                asteroid = Asteroid(128, Level.PATH_ASTEROID, k_animate=0.1)
+                asteroid = Asteroid(128, self.PATH_ASTEROID, k_animate=0.1)
                 self.asteroids.add(asteroid)
         self.asteroids.update(self.world_shift)
         self.asteroids.draw(self.display)
@@ -340,7 +368,7 @@ class Level:
             for limitation in limitations:
                 if pygame.sprite.collide_mask(asteroid, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     x, y = asteroid.rect.topleft
-                    explosion_sprite = Explosion(128, x, y, Level.PATH_EXR_ASTEROID, k_animate=0.5)
+                    explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
                     asteroid.kill()
 
@@ -381,6 +409,7 @@ class Level:
         self.explosions.update(self.world_shift)
         self.player.sprite.missiles.update(self.world_shift)
         self.missile_scale.update()
+        self.substance.update(self.world_shift[1])
 
         # рисование пуль
         self.player.sprite.missiles.draw(self.display)
@@ -416,12 +445,15 @@ class Level:
         # рисование взрыва
         self.explosions.draw(self.display)
 
-        # обработка столкновения с монетами
-        self.collision_with_coins()
-
         self.collision_with_asteroids()  # столкновения объектов карты с астероидами
         # генерация астероидов и отображение их
         self.generation_asteroids()
+
+        # отображение поднимающегося вещества
+        self.substance.draw(self.display)
+
+        # обработка столкновения с монетами
+        self.collision_with_coins()
 
         # рисование шкалы относящихся к нему текст
         self.missile_scale.draw(self.display)
