@@ -22,7 +22,7 @@ scene = menu = Menu(items)
 menu.start_music()
 game_over = Game_over(items)
 options = Options(options_items)
-level = Level(level_4, screen)  # создание уровня
+level = Level(level_0, screen)  # создание уровня
 clock = pygame.time.Clock()
 while True:
     screen.fill('grey')
@@ -38,7 +38,7 @@ while True:
             game_state = change()
             scene.stop_music()
             if game_state == 'running_game':
-                level = Level(level_1, screen)
+                level = Level(level_4, screen)
                 scene = level
             if game_state == 'running_menu':
                 scene = menu

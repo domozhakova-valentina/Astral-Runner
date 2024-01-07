@@ -310,16 +310,16 @@ class Level:
             # столкновение с веществом
             if pygame.sprite.collide_mask(player, self.substance.sprite):
                 player.gravity += 0.02
-                if  self.healh_scale.change_health(1):  # изменяется шкала здоровья
+                if self.healh_scale.change_health(1):  # изменяется шкала здоровья
                     # если здоровье закончилось, то игрок умирает
                     player.kill()
-                    sys.exit()
+                    self.end_flag = True
             else:
                 player.gravity = player.CONST_GRAVITY
             # если весь экран в веществе
             if self.substance.sprite.rect.y <= 0:
                 player.kill()
-                sys.exit()
+                self.end_flag = True
 
     def collision_with_coins(self):
         sprite = self.player.sprite
@@ -387,9 +387,6 @@ class Level:
         '''Запуск уровня!'''
         # рисование фона
         self.display.blit(self.background_image, (0, 0))
-
-        # обработка урона
-        self.player_kill()
 
         # обработка столкновения снаряда player's
         self.collision_missile_player()
@@ -467,6 +464,9 @@ class Level:
 
         # проверка на падение в бездну
         self.check_fall()
+
+        # обработка урона
+        self.player_kill()
 
     def update(self, event):
         pass
