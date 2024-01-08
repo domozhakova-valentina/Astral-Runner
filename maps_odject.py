@@ -1,5 +1,6 @@
 import pygame
 from load import import_folder_images
+from random import randint
 
 
 class MainTile(pygame.sprite.Sprite):
@@ -22,6 +23,23 @@ class StaticTile(MainTile):
         else:
             self.image = image_surface
         self.rect = self.image.get_rect(topleft=(x + croped[0] // 2, y + croped[1]))
+
+
+class MobileTile(StaticTile):
+    def __init__(self, size, x, y, image_surface):
+        super().__init__(size, x, y, image_surface)
+        self.speed = -randint(3, 5)
+
+    def turn(self):
+        '''Меняется направление движения.'''
+        self.speed *= -1
+
+    def moving(self):
+        self.rect.x += self.speed
+
+    def update(self, shift):
+        super().update(shift)
+        self.moving()
 
 
 class AnimatedDecor(MainTile):
