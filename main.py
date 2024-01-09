@@ -6,14 +6,14 @@ from menu import Menu, items
 from game_over import Game_over, buttons
 from options import Options, options_items
 from sounds import sounds_list, music_list, background_music, all_sounds
-from levels_map import Levels_Map, levels
+from levels_map import Levels_Map, levels, button_actions
 
 pygame.init()
-pygame.mixer.set_num_channels(20)  # устанавливаем больше звуковых каналов
-for elem in sounds_list:  # добавление всех звуков
+pygame.mixer.set_num_channels(20) # устанавливаем больше звуковых каналов
+for elem in sounds_list: # добавление всех звуков
     all_sounds.add_sound(elem)
 
-for elem in music_list:  # добавление всей музыки
+for elem in music_list: # добавление всей музыки
     background_music.add_music(elem)
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -30,7 +30,7 @@ menu.start_music()
 clock = pygame.time.Clock()
 
 game_states = {
-    'running_levels_map': Levels_Map(levels),
+    'running_levels_map': Levels_Map(levels, button_actions),
     'running_rules': Menu(items),
     'running_options': Options(options_items),
     'running_menu': Menu(items),

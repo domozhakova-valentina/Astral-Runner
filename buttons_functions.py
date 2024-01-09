@@ -3,7 +3,7 @@ from sounds import all_sounds, background_music
 
 
 class Button:
-    def __init__(self, text, action, width, height, color, font, font_size, x, y):
+    def __init__(self, text, action, width, height, color, font, font_size, x, y, image=None):
         self.text = text
         self.action = action
         self.font = font
@@ -14,6 +14,11 @@ class Button:
         self.x = x
         self.y = y
 
+        if image is not None:
+            self.image = pygame.image.load(image)
+        else:
+            self.image = None
+
     def draw(self, screen):
         # код для рисования кнопки на экране
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
@@ -22,6 +27,8 @@ class Button:
             text = font.render(self.text, 1, (0, 0, 0))
             screen.blit(text, (self.x + (self.width / 2 - text.get_width() / 2),
                                self.y + (self.height / 2 - text.get_height() / 2)))
+        if self.image is not None:
+            screen.blit(self.image, (self.x + 15, self.y - 240))
 
     def update(self, coords):
         # выполнение функции, соответсвующей кнопке, если кнопка была нажата
@@ -31,6 +38,9 @@ class Button:
 
     def change_color(self, color):
         self.color = color
+
+    def change_action(self, action):
+        self.action = action
 
 
 '''Ниже функции кнопок'''
