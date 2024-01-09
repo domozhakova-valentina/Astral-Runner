@@ -27,9 +27,9 @@ levels_map = Levels_Map(levels, button_actions)
 level = Level(level_0, screen)
 clock = pygame.time.Clock()
 while True:
-    # if level.end_flag:
-    #     scene = Game_over(buttons)
-    #     level.end_flag = False
+    if level.end_flag:
+         scene = Game_over(buttons)
+         level.end_flag = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -53,7 +53,7 @@ while True:
                 level = Level(level_3, screen)
                 scene = level
             if game_state == 'running_level_5':
-                level = Level(level_0, screen)
+                level = Level(level_4, screen)
                 scene = level
             if game_state == 'running_options':
                 scene = options
