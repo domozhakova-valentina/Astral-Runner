@@ -4,6 +4,7 @@ from data_level import level_0, level_1
 from level import Level
 from menu import Menu, items
 from game_over import Game_over, buttons
+from win import Win, buttons1
 from options import Options, options_items
 from sounds import sounds_list, music_list, background_music, all_sounds
 
@@ -21,6 +22,7 @@ game_state = 'running menu'
 scene = menu = Menu(items)
 menu.start_music()
 game_over = Game_over(items)
+win = Win(items)
 options = Options(options_items)
 level = Level(level_1, screen)  # создание уровня
 clock = pygame.time.Clock()
@@ -29,6 +31,8 @@ while True:
     if level.end_flag:
         scene = game_over
         level.end_flag = False
+    if level.win_flag:
+        scene = win
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()

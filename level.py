@@ -89,8 +89,9 @@ class Level:
         # звук повреждения игрока
         self.damage_sound = 'sound/damage.mp3'
 
-        # флаг проигрыша
+        # флаги проигрыша и выигрыша
         self.end_flag = False
+        self.win_flag = False
 
     def create_tiles_group(self, map, type, data):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
@@ -317,8 +318,7 @@ class Level:
         player = self.player.sprite
         end = self.purpose.sprite
         if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
-            print('Win')
-            sys.exit()
+            self.win_flag = True
 
     def generation_asteroids(self):
         '''Генерируются рандомно астероиды в соответствие с коэффициентом.'''
