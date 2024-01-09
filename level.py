@@ -108,8 +108,9 @@ class Level:
         # звук повреждения игрока
         self.damage_sound = 'sound/damage.mp3'
 
-        # флаг проигрыша
+        # флаги проигрыша и выигрыша
         self.end_flag = False
+        self.win_flag = False
 
         # имя уровня для хранения информации о монетах
         self.level_name = data_level['level_name']
@@ -375,14 +376,13 @@ class Level:
         player = self.player.sprite
         end = self.purpose.sprite
         if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
-            print('Win')
             with open("levels_data/coins_data.pickle", "rb") as file:
                 coins_data = pickle.load(file)
             if int(self.counter_coins) > int(coins_data[self.level_name]):
                 coins_data[self.level_name] = self.counter_coins
             with open(f"levels_data/coins_data.pickle", "wb") as file:
                 pickle.dump(coins_data, file)
-            sys.exit()
+            self.win_flag = True
 
     def generation_asteroids(self):
         '''Генерируются рандомно астероиды в соответствие с коэффициентом.'''
