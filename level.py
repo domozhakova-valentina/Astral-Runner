@@ -1,5 +1,6 @@
 import sys
 from random import randrange
+import pickle
 
 import pygame
 from settings import screen_width, screen_height
@@ -110,6 +111,9 @@ class Level:
         # флаг проигрыша
         self.end_flag = False
 
+        # имя уровня для хранения информации о монетах
+        self.level_name = data_level['level_name']
+
     def create_tiles_group(self, map, type, data):
         '''Создаёт группы спрайтов карты в соответствии с типом объекта.'''
         all_group = pygame.sprite.Group()
@@ -195,7 +199,7 @@ class Level:
         if self.player.sprite.ground and not self.flag_ground and not self.particles_dust_sprite.sprites():
             dust_sprite = Particle(self.player.sprite.rect.midbottom - pygame.math.Vector2(0, 15), 'land')
             self.particles_dust_sprite.add(dust_sprite)
-            all_sounds.play_sound(self.land_sound) # звук падения
+            all_sounds.play_sound(self.land_sound)  # звук падения
 
     def horizontal_collisions(self):
         '''Горизонтальные столкновения с картой.'''
@@ -284,11 +288,13 @@ class Level:
         group_limitations.add(limitations)
         missiles = self.player.sprite.missiles
 
-        collisions = pygame.sprite.groupcollide(missiles, group_limitations, False, False)  # столкновение групп спрайтов снарядов и объектов карты
+        collisions = pygame.sprite.groupcollide(missiles, group_limitations, False,
+                                                False)  # столкновение групп спрайтов снарядов и объектов карты
 
         for missile, limitations in collisions.items():
             for limitation in limitations:
-                if pygame.sprite.collide_mask(missile, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
+                if pygame.sprite.collide_mask(missile,
+                                              limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     self.generate_explosion(missile)
                     missile.kill()
         for sprite in enemy:  # переборка врагов
@@ -370,6 +376,12 @@ class Level:
         end = self.purpose.sprite
         if pygame.sprite.collide_mask(player, end) and not self.enemies.sprites():
             print('Win')
+            with open("levels_data/coins_data.pickle", "rb") as file:
+                coins_data = pickle.load(file)
+            if self.counter_coins > coins_data[self.level_name]:
+                coins_data[self.level_name] = self.counter_coins
+            with open(f"levels_data/coins_data.pickle", "wb") as file:
+                pickle.dump(coins_data, file)
             sys.exit()
 
     def generation_asteroids(self):
@@ -387,11 +399,13 @@ class Level:
                               self.obstacles.sprites() + self.mobile_tiles.sprites()
         group_limitations = pygame.sprite.Group()
         group_limitations.add(limitations_sprites)
-        collisions = pygame.sprite.groupcollide(self.asteroids, group_limitations, False, False)  # столкновение групп спрайтов астероидов и объектов карты
+        collisions = pygame.sprite.groupcollide(self.asteroids, group_limitations, False,
+                                                False)  # столкновение групп спрайтов астероидов и объектов карты
 
         for asteroid, limitations in collisions.items():
             for limitation in limitations:
-                if pygame.sprite.collide_mask(asteroid, limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
+                if pygame.sprite.collide_mask(asteroid,
+                                              limitation):  # для того чтобы проверять, что спрайты столкнулись изображениями
                     x, y = asteroid.rect.topleft
                     explosion_sprite = Explosion(128, x, y, self.PATH_EXR_ASTEROID, k_animate=0.5)
                     self.explosions.add(explosion_sprite)
