@@ -378,7 +378,7 @@ class Level:
             print('Win')
             with open("levels_data/coins_data.pickle", "rb") as file:
                 coins_data = pickle.load(file)
-            if self.counter_coins > coins_data[self.level_name]:
+            if int(self.counter_coins) > int(coins_data[self.level_name]):
                 coins_data[self.level_name] = self.counter_coins
             with open(f"levels_data/coins_data.pickle", "wb") as file:
                 pickle.dump(coins_data, file)
