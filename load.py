@@ -17,6 +17,7 @@ def import_folder_images(path):
     '''Из папки достаёт изображения и возвращает список их.'''
     surface_list = []
     for _, _, image_files in os.walk(path):
+        image_files.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
         for name_image in image_files:
             full_path = path + '/' + name_image
             image = pygame.image.load(full_path).convert_alpha()

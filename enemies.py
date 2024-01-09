@@ -5,10 +5,13 @@ from random import randint
 
 
 class MainEnemy(AnimatedDecor):
-    def __init__(self, size, x, y, path, health=20, direction=-1):
+    def __init__(self, size, x, y, path, health=20, direction=-1, speed=None):
         self.direction = direction  # связывает, в какую сторону смотрит монстр
         super().__init__(size, x, y, path + '/run')
-        self.speed = randint(3, 6) * self.direction
+        if not speed:
+            self.speed = randint(3, 6) * self.direction
+        else:
+            self.speed = speed
         self.health = health
         x, y = x + size // 2, y + size
         self.rect = self.image.get_rect(midbottom=(x, y))

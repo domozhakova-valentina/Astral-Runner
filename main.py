@@ -1,19 +1,20 @@
 import pygame, sys
 from settings import *
-from data_level import level_0, level_1
+from data_level import level_0, level_1, level_2, level_3, level_4
 from level import Level
 from menu import Menu, items
 from game_over import Game_over, buttons
 from win import Win, buttons1
 from options import Options, options_items
 from sounds import sounds_list, music_list, background_music, all_sounds
+from levels_map import Levels_Map, levels, button_actions
 
 pygame.init()
-pygame.mixer.set_num_channels(20) # устанавливаем больше звуковых каналов
-for elem in sounds_list: # добавление всех звуков
+pygame.mixer.set_num_channels(20)  # устанавливаем больше звуковых каналов
+for elem in sounds_list:  # добавление всех звуков
     all_sounds.add_sound(elem)
 
-for elem in music_list: # добавление всей музыки
+for elem in music_list:  # добавление всей музыки
     background_music.add_music(elem)
 
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -24,15 +25,17 @@ menu.start_music()
 game_over = Game_over(items)
 win = Win(items)
 options = Options(options_items)
-level = Level(level_1, screen)  # создание уровня
+levels_map = Levels_Map(levels, button_actions)
+level = Level(level_0, screen)
 clock = pygame.time.Clock()
 while True:
-    screen.fill('grey')
     if level.end_flag:
         scene = game_over
         level.end_flag = False
     if level.win_flag:
         scene = win
+        level.win_flag = False
+        
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -41,15 +44,29 @@ while True:
         if change is not None:
             game_state = change()
             scene.stop_music()
-            if game_state == 'running_game':
-                level = Level(level_1, screen)
-                scene = level
             if game_state == 'running_menu':
                 scene = menu
+            if game_state == 'running_level_1':
+                level = Level(level_0, screen)
+                scene = level
+            if game_state == 'running_level_2':
+                level = Level(level_1, screen)
+                scene = level
+            if game_state == 'running_level_3':
+                level = Level(level_2, screen)
+                scene = level
+            if game_state == 'running_level_4':
+                level = Level(level_3, screen)
+                scene = level
+            if game_state == 'running_level_5':
+                level = Level(level_4, screen)
+                scene = level
             if game_state == 'running_options':
                 scene = options
             if game_state == 'running_rules':
                 pass
+            if game_state == 'running_levels_map':
+                scene = levels_map
             scene.start_music()
     scene.run(event, screen)
     pygame.display.flip()

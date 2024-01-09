@@ -1,4 +1,3 @@
-import pygame
 from random import randint
 from maps_odject import AnimatedDecor
 from settings import screen_width, screen_height
