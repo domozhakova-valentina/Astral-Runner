@@ -13,9 +13,12 @@ buttons = [
 ]
 
 
-class Game_over(Menu):
-    def __init__(self, items):
+class GameOver(Menu):
+    def __init__(self, items, coins):
         super().__init__(items=buttons)
+        self.coins = Button(f"Количество монет: {coins} ", action=None, width=menu_item_width, height=menu_item_height,
+                            color=(255, 255, 255), font=None, font_size=font_size // 2, x=850, y=680)
+        buttons.append(self.coins)
         self.items = buttons
         self.size = (screen_width, screen_height)
         self.fon = pygame.image.load('game_over/fon1.jpg')

@@ -3,8 +3,8 @@ from settings import *
 from data_level import level_0, level_1, level_2, level_3, level_4
 from level import Level
 from menu import Menu, items
-from game_over import Game_over, buttons
-from win import Win, buttons1
+from game_over import GameOver
+from win import Win
 from options import Options, options_items
 from sounds import sounds_list, music_list, background_music, all_sounds
 from levels_map import Levels_Map, levels, button_actions
@@ -22,8 +22,8 @@ pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
 scene = menu = Menu(items)
 menu.start_music()
-game_over = Game_over(items)
-win = Win(items)
+game_over = GameOver(items, 0)
+win = Win(items, 0)
 options = Options(options_items)
 levels_map = Levels_Map(levels, button_actions)
 level = Level(level_0, screen)
@@ -32,12 +32,12 @@ while True:
     if level.end_flag:
         scene.stop_music()
         all_sounds.play_sound(game_over.sound)
-        scene = game_over
+        scene = GameOver(items, level.counter_coins)
         level.end_flag = False
     if level.win_flag:
         scene.stop_music()
         all_sounds.play_sound(win.sound)
-        scene = win
+        scene = Win(items, level.counter_coins)
         level.win_flag = False
         
     for event in pygame.event.get():
