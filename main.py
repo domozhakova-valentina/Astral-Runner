@@ -22,8 +22,6 @@ pygame.display.set_caption('AstralRunner')
 game_state = 'running menu'
 scene = menu = Menu(items)
 menu.start_music()
-game_over = GameOver(items, 0)
-win = Win(items, 0)
 options = Options(options_items)
 levels_map = Levels_Map(levels, button_actions)
 level = Level(level_0, screen)
@@ -31,13 +29,13 @@ clock = pygame.time.Clock()
 while True:
     if level.end_flag:
         scene.stop_music()
-        all_sounds.play_sound(game_over.sound)
         scene = GameOver(items, level.counter_coins)
+        all_sounds.play_sound(scene.sound)
         level.end_flag = False
     if level.win_flag:
         scene.stop_music()
-        all_sounds.play_sound(win.sound)
         scene = Win(items, level.counter_coins)
+        all_sounds.play_sound(scene.sound)
         level.win_flag = False
         
     for event in pygame.event.get():
