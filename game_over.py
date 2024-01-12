@@ -20,3 +20,4 @@ class Game_over(Menu):
         self.size = (screen_width, screen_height)
         self.fon = pygame.image.load('game_over/fon1.jpg')
         self.fon = pygame.transform.scale(self.fon, self.size)
+        self.sound = 'sound/game over.mp3'

@@ -29,11 +29,21 @@ class Background_music:
         self.music = {}
         self.music_volume = 0.5
         self.channels_num = 0
+        self.state = 1
 
     def change_music_volume(self, num):
         self.music_volume = num
-        for val in self.music.values():
-            val[0].set_volume(self.music_volume)
+        if self.state:
+            for val in self.music.values():
+                val[0].set_volume(self.music_volume)
+
+    def change_music_state(self, state):
+        self.state = state
+        if self.state == 0:
+            for val in self.music.values():
+                val[0].set_volume(0)
+        else:
+            self.change_music_volume(self.music_volume)
 
     def add_music(self, name):
         channel = pygame.mixer.Channel(self.channels_num)
@@ -51,11 +61,14 @@ class Background_music:
 
     def stop_music(self, name):
         music, channel = self.music[name]
-        channel.pause()
+        if name == 'sound/game_music.mp3':
+            channel.stop()
+        else:
+            channel.pause()
 
 
 sounds_list = ['sound/damage.mp3', 'sound/explosion.mp3', 'sound/get_coin.wav', 'sound/jump.ogg', 'sound/shot.wav',
-               'sound/step.wav']
+               'sound/step.wav', 'sound/game over.mp3', 'sound/win.wav']
 music_list = ['sound/menu_music.mp3', 'sound/game_music.mp3']
 
 all_sounds = All_Sounds()
