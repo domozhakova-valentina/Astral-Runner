@@ -21,7 +21,10 @@ levels = [
            font=font, font_size=font_size, x=850, y=600, image='menu/levels_photo/planet_5.png')
 ]
 
-button_actions = [start_level_2, start_level_3, start_level_4, start_level_5]
+button_actions = [start_level_2, start_level_3, start_level_4,
+                  start_level_5]  # присваиваются кнопке при разблокировании уровня
+
+min_coins = [16, 25, 30, 20]  # минимальное количество монет для перехода на следующий уровень
 
 
 class Levels_Map:
@@ -65,7 +68,7 @@ class Levels_Map:
             screen.blit(string_rendered, text_rect)
 
         for i in range(len(self.items)):
-            if i >= 2 and int(coins[i - 2]) >= 23:
+            if i >= 2 and int(coins[i - 2]) >= int(min_coins[i - 2]):
                 self.items[i].change_color((0, 150, 0))
                 self.items[i].change_action(self.button_actions[i - 2])
             self.items[i].draw(screen)

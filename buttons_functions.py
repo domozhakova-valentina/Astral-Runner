@@ -66,9 +66,9 @@ def active_sound(num):
     all_sounds.change_sounds_volume(num)
 
 
-def active_music(num):
-    num = 1 - num
-    background_music.change_music_volume(num)
+def active_music(state):
+    state = 1 - state
+    background_music.change_music_state(state)
 
 
 def change_music_loud(num):

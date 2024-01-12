@@ -1,4 +1,3 @@
-import pygame
 from buttons_functions import *
 
 

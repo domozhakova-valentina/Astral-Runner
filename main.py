@@ -30,9 +30,13 @@ level = Level(level_0, screen)
 clock = pygame.time.Clock()
 while True:
     if level.end_flag:
+        scene.stop_music()
+        all_sounds.play_sound(game_over.sound)
         scene = game_over
         level.end_flag = False
     if level.win_flag:
+        scene.stop_music()
+        all_sounds.play_sound(win.sound)
         scene = win
         level.win_flag = False
         
