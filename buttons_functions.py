@@ -1,6 +1,6 @@
 import pygame
 from sounds import all_sounds, background_music
-
+import textwrap as tw
 
 class Button:
     def __init__(self, text, action, width, height, color, font, font_size, x, y, image=None):
@@ -29,6 +29,18 @@ class Button:
                                self.y + (self.height / 2 - text.get_height() / 2)))
         if self.image is not None:
             screen.blit(self.image, (self.x + 15, self.y - 240))
+
+    def draw1(self, screen):
+        # код для рисования построчного текста на экране
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        font = pygame.font.SysFont(self.font, self.font_size)
+        font1 = pygame.font.SysFont(self.font, size=37, bold=True)
+        for i in range(len(self.text)):
+            if i == 0:
+                text = font1.render(self.text[i], 1, (0, 0, 0))
+            else:
+                text = font.render(self.text[i], 1, (0, 0, 0))
+            screen.blit(text, (self.x + 25, self.y + 30 * (i + 1) + (10 if i > 0 else 0)))
 
     def update(self, coords):
         # выполнение функции, соответсвующей кнопке, если кнопка была нажата

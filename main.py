@@ -5,6 +5,7 @@ from level import Level
 from menu import Menu, items
 from game_over import GameOver
 from win import Win
+from rules import Rules
 from options import Options, options_items
 from sounds import sounds_list, music_list, background_music, all_sounds
 from levels_map import Levels_Map, levels, button_actions
@@ -26,6 +27,7 @@ options = Options(options_items)
 levels_map = Levels_Map(levels, button_actions)
 level = Level(level_0, screen)
 clock = pygame.time.Clock()
+rules = Rules()
 while True:
     if level.end_flag:
         scene.stop_music()
@@ -66,7 +68,7 @@ while True:
             if game_state == 'running_options':
                 scene = options
             if game_state == 'running_rules':
-                pass
+                scene = rules
             if game_state == 'running_levels_map':
                 scene = levels_map
             scene.start_music()
